@@ -4,9 +4,9 @@ I built this because my job-search workflow had split across browser tabs, sprea
 
 The matching model is the part I care about most. It is not an LLM prompt or a cosine-similarity wrapper. It compares token-level BGE-M3 representations, summarizes the interaction matrix into a fixed feature vector, and runs a calibrated binary classifier trained on labeled resume/job pairs.
 
-## How matching works
+## Model architecture and training
 
-[![Application scoring and model lifecycle](assets/architecture.svg)](assets/architecture.drawio)
+[![BGE-M3-based resume and job-description scoring model training](assets/architecture.svg)](assets/architecture.drawio)
 
 The rendered diagram links to the editable [draw.io source](assets/architecture.drawio).
 
@@ -20,27 +20,16 @@ BGE-M3 remains frozen during training. The learned part is the `77 -> 2` classif
 
 The score represents the calibrated probability of a `Good Fit` label. The model bundle pins the classifier checksum, encoder fingerprint, calibration parameters, and decision threshold so the API cannot quietly load a different encoder or checkpoint.
 
-The current production path runs the model in a private Hugging Face Space:
-
-1. The browser extension captures the job details and selected resume.
-2. The API stores a content-addressed scoring input and queues the work in SQLite.
-3. A worker extracts text from the resume and sends text plus content hashes to the Space. Local file paths never leave the machine.
-4. The Space verifies the requested deployment revision, scores the pair on a GPU, and returns the result with model provenance.
-5. The worker validates the response fingerprint before publishing the score to Notion.
-
-There is also a local GPU path backed by MLflow. Both deployment paths use the same runtime loader and verify the same model contract.
-
 ## MLflow
 
-MLflow tracks the model lifecycle rather than replacing the scoring API:
+MLflow tracks the training and evaluation lifecycle:
 
 - Training creates a parent run with nested runs for each fold and records parameters, epoch metrics, checkpoints, and evaluation artifacts.
 - Calibration and held-out evaluation are attached to the originating runs, which keeps the selected checkpoint traceable to its split and metrics.
-- The packaged classifier is registered as a versioned MLflow model. A `champion` alias identifies the bundle used by the optional local GPU engine.
-- A release script downloads that registered bundle, adds immutable deployment metadata, and stages it for the private Hugging Face Space.
-- Production inference events record latency, outcome, model version, and content fingerprints in a separate MLflow experiment. Resume text and job-description text are not logged.
+- The selected classifier can be registered as a versioned model with a `champion` alias.
+- The final bundle retains the source MLflow run ID alongside the checkpoint hash, scaler, calibration parameters, threshold, encoder fingerprint, and feature contract.
 
-The Hugging Face Space performs the hosted inference. MLflow provides experiment history, artifacts, model lineage, and local model promotion; it is not in the hosted request path.
+MLflow provides experiment history, artifact lineage, and model promotion. It is not part of the model's learned architecture.
 
 ## Evaluation
 
