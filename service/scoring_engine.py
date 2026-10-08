@@ -11,17 +11,8 @@ from pathlib import Path
 
 import mlflow
 import torch
-from FlagEmbedding import BGEM3FlagModel
 from mlflow import MlflowClient
-
-from resume_jd_scoring.embeddings import model_fingerprint
-from resume_jd_scoring.inference import BinaryResumeJDScorer
-
-from service.scoring_contract import score_input_fingerprint
-
-
-def score_band(score):
-    return "Strong" if score >= 75 else "Moderate" if score >= 55 else "Weak"
+from resume_jd_scoring.runtime import build_scoring_runtime
 
 
 class InferenceTelemetry:
@@ -62,36 +53,18 @@ class ScoringRuntime:
         alias = os.getenv("MLFLOW_MODEL_ALIAS", "champion")
         version = self.client.get_model_version_by_alias(model_name, alias)
         bundle = Path(mlflow.artifacts.download_artifacts(artifact_uri=version.source))
-        self.scorer = BinaryResumeJDScorer.from_bundle(bundle)
-        self.manifest = json.loads((bundle / "manifest.json").read_text(encoding="utf-8"))
         self.scorer_version = os.getenv("SCORER_VERSION", "bge-m3-knrm-binary-v1")
         self.embedding_model = os.getenv("EMBEDDING_MODEL", "BAAI/bge-m3-colbert")
         self.pooling_device = os.getenv("SCORING_DEVICE", "cuda:0")
         if self.pooling_device.startswith("cuda") and not torch.cuda.is_available():
             raise RuntimeError("CUDA scoring was requested but is unavailable")
         model_path = Path(os.getenv("BGE_MODEL_PATH", "/models/bge-m3"))
-        encoding = {
-            "pipeline_version": 1,
-            "model_name": "BAAI/bge-m3",
-            "representation": "normalized_colbert_token_vectors",
-            "max_length": int(self.manifest["encoder"]["max_length"]),
-            "cache_dtype": "float16",
-            "excluded_token": "cls",
-        }
-        fingerprint, _ = model_fingerprint(
-            model_path, encoding, additional_files=("colbert_linear.pt",)
-        )
-        if fingerprint != self.manifest["encoder"]["fingerprint"]:
-            raise RuntimeError("BGE-M3 files do not match the classifier bundle")
-        self.encoder = BGEM3FlagModel(
-            str(model_path),
-            use_fp16=self.pooling_device.startswith("cuda"),
-            devices=[self.pooling_device],
-            batch_size=1,
-            passage_max_length=int(self.manifest["encoder"]["max_length"]),
-            return_dense=False,
-            return_sparse=False,
-            return_colbert_vecs=True,
+        self.runtime = build_scoring_runtime(
+            bundle,
+            model_path,
+            scorer_version=self.scorer_version,
+            embedding_model=self.embedding_model,
+            device=self.pooling_device,
         )
         experiment = mlflow.set_experiment(
             os.getenv("MLFLOW_INFERENCE_EXPERIMENT", "resume-jd-production-inference")
@@ -102,32 +75,11 @@ class ScoringRuntime:
 
     def score(self, payload):
         scoring_input = payload["scoring_input"]
-        resume_text = scoring_input["resume_text"].strip()
-        if not resume_text:
-            raise ValueError("Resume text is required")
-        if "resume_path" in scoring_input:
-            raise ValueError("Remote scoring input must not contain a resume path")
-        expected_job_hash = hashlib.sha256(
-            scoring_input["job_description"].encode()
-        ).hexdigest()
-        if expected_job_hash != scoring_input["job_description_hash"]:
-            raise ValueError("Job description does not match its content hash")
-        expected_fingerprint = score_input_fingerprint(
-            scoring_input, self.scorer_version, self.embedding_model
-        )
-        if payload["input_fingerprint"] != expected_fingerprint:
-            raise ValueError("Scoring input fingerprint does not match its content hashes")
         expected_hash = scoring_input["resume_content_hash"]
         started = time.perf_counter()
         try:
             with self.inference_lock:
-                result = self.scorer.score_texts(
-                    self.encoder,
-                    resume_text,
-                    scoring_input["job_description"],
-                    pooling_device=self.pooling_device,
-                    max_length=int(self.manifest["encoder"]["max_length"]),
-                )
+                response = self.runtime.score(payload)
         except Exception:
             self.telemetry.submit({
                 "tags": {
@@ -142,21 +94,6 @@ class ScoringRuntime:
                 "status": "FAILED",
             })
             raise
-        score = round(float(result["score"]), 1)
-        response = {
-            "application_key": scoring_input["application_key"],
-            "input_fingerprint": payload["input_fingerprint"],
-            "scorer_version": self.scorer_version,
-            "embedding_model": self.embedding_model,
-            "score": score,
-            "band": score_band(score),
-            "fit_label": result["label"],
-            "fit_probability": result["probability"],
-            "decision_threshold": result["decision_threshold"],
-            "matched_terms": [],
-            "category_breakdown": {},
-            "top_gaps": [],
-        }
         self.telemetry.submit({
             "tags": {
                 "outcome": "completed",
@@ -167,13 +104,13 @@ class ScoringRuntime:
                 "resume_content_hash": expected_hash,
                 "job_description_hash": scoring_input["job_description_hash"],
                 "model_version": self.model_version,
-                "fit_label": result["label"],
+                "fit_label": response["fit_label"],
             },
             "metrics": {
                 "latency_ms": (time.perf_counter() - started) * 1000,
-                "score": score,
-                "fit_probability": result["probability"],
-                "decision_threshold": result["decision_threshold"],
+                "score": response["score"],
+                "fit_probability": response["fit_probability"],
+                "decision_threshold": response["decision_threshold"],
             },
         })
         return response
