@@ -22,7 +22,7 @@ I wanted to explore a scoring system that could eventually use application outco
 
 [BGE-M3](https://huggingface.co/BAAI/bge-m3) is an embedding model from BAAI built for three retrieval modes: dense vectors, sparse lexical matching, and ColBERT-style multi-vector retrieval. It supports inputs up to 8,192 tokens and more than 100 languages. The design is described in the [BGE-M3 paper](https://arxiv.org/abs/2402.03216).
 
-This project uses bge-m3 until the multi-vector output. Instead of reducing a resume or job description to one vector, BGE-M3 produces a contextual vector for each token. That preserves local interactions such as a job requirement matching one specific resume phrase. The model then builds the full resume/job token-similarity matrix $\rarr$ applies 11 Gaussian kernels $\rarr$ and summarizes each kernel response with seven distribution statistics. The result is a __77-feature__ vector for a small linear classifier.
+This project uses bge-m3 until the multi-vector output. Instead of reducing a resume or job description to one vector, BGE-M3 produces a contextual vector for each token. That preserves local interactions such as a job requirement matching one specific resume phrase. The model then builds the full resume/job token-similarity matrix &rarr; applies 11 Gaussian kernels &rarr; and summarizes each kernel response with seven distribution statistics. The result is a __77-feature__ vector for a small linear classifier.
 
 BGE-M3 remains frozen during training. The learned part is the `77 -> 2` classifier, followed by [Platt scaling](https://en.wikipedia.org/wiki/Platt_scaling).
 
