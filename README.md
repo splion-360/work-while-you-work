@@ -1,6 +1,8 @@
-# work-while-you-work
+# Work while you Work
 
-I built this because my job-search workflow had split across browser tabs, spreadsheets, resume files, and a few ML notebooks. The project now does two things: it tracks applications from the browser and scores a selected resume against the job description before I apply.
+Work while you Work is a browser-based job application tracker with an ML system for resume and job-description matching. It captures job details from supported job boards, tracks applications in Notion, and scores a selected resume against the job description before an application is submitted.
+
+I built this to make my job search easier by keeping application tracking and resume matching in one workflow.
 
 The matching model is the part I care about most. It is not an LLM prompt or a cosine-similarity wrapper. It compares token-level BGE-M3 representations, summarizes the interaction matrix into a fixed feature vector, and runs a calibrated binary classifier trained on labeled resume/job pairs.
 
