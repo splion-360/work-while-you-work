@@ -29,6 +29,9 @@ def main():
     service_url = os.getenv("JOB_TRACKER_URL", "http://127.0.0.1:8765").rstrip("/")
     api_key = os.getenv("JOB_TRACKER_API_KEY", "")
     headers = {"X-Job-Tracker-Key": api_key} if api_key else {}
+    health = request_json(f"{service_url}/healthz")
+    if not health.get("ok"):
+        raise RuntimeError("Job tracker is not ready")
     resumes = request_json(f"{service_url}/api/resumes", headers=headers)["resumes"]
     if not resumes:
         raise RuntimeError("No resume PDFs are available")
@@ -99,22 +102,13 @@ def main():
         )
         if checked_score.get("state") != "completed":
             raise RuntimeError(f"Score lookup returned {checked_score.get('state')}")
-        gpu = subprocess.run(
-            ["docker", "compose", "exec", "-T", "ollama", "ollama", "ps"],
-            capture_output=True,
-            check=True,
-            text=True,
-            timeout=15,
-        ).stdout
-        if "100% GPU" not in gpu:
-            raise RuntimeError("Ollama did not report 100% GPU execution")
         print(json.dumps({
             "application_logged_seconds": elapsed,
             "scoring_status": logged.get("scoring_status"),
             "score_rows": len(score_pages),
             "score_lookup": checked_score["score"],
             "preview_score": preview["score"],
-            "gpu": "100%",
+            "scoring_backend": health["scoring_backend"],
             "job_description_saved": True,
         }, sort_keys=True))
     finally:

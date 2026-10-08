@@ -6,14 +6,11 @@ from pathlib import Path
 @dataclass(frozen=True)
 class ScoringSettings:
     database_path: Path
-    ollama_url: str
     embedding_model: str
     scorer_version: str
     max_job_description_chars: int
     min_job_description_chars: int
-    ollama_timeout_seconds: int
     job_description_retention_days: int
-    gpu_mode: str
     job_lease_seconds: int
     max_score_attempts: int
     worker_poll_seconds: int
@@ -80,19 +77,13 @@ class ScoringSettings:
 
     @classmethod
     def from_env(cls):
-        gpu_mode = os.getenv("GPU_MODE", "required").strip().lower()
-        if gpu_mode != "required":
-            raise ValueError("GPU_MODE must be required for the Docker GPU stack")
         settings = cls(
             database_path=Path(os.getenv("SCORING_DB_PATH", "/data/job-tracker.sqlite3")),
-            ollama_url=os.getenv("OLLAMA_URL", "http://ollama:11434").rstrip("/"),
             embedding_model=os.getenv("EMBEDDING_MODEL", "BAAI/bge-m3-colbert"),
             scorer_version=os.getenv("SCORER_VERSION", "bge-m3-knrm-binary-v1"),
             max_job_description_chars=_positive_int("MAX_JOB_DESCRIPTION_CHARS", 50000),
             min_job_description_chars=_positive_int("MIN_JOB_DESCRIPTION_CHARS", 200),
-            ollama_timeout_seconds=_positive_int("OLLAMA_TIMEOUT_SECONDS", 60),
             job_description_retention_days=_positive_int("JOB_DESCRIPTION_RETENTION_DAYS", 365),
-            gpu_mode=gpu_mode,
             job_lease_seconds=_positive_int("JOB_LEASE_SECONDS", 300),
             max_score_attempts=_positive_int("MAX_SCORE_ATTEMPTS", 5),
             worker_poll_seconds=_positive_int("WORKER_POLL_SECONDS", 2),
@@ -100,8 +91,6 @@ class ScoringSettings:
             publication_uncertainty_seconds=_positive_int("PUBLICATION_UNCERTAINTY_SECONDS", 900),
             score_cache_ttl_seconds=_positive_int("SCORE_CACHE_TTL_SECONDS", 300),
         )
-        if not settings.ollama_url.startswith(("http://", "https://")):
-            raise ValueError("OLLAMA_URL must be an HTTP URL")
         return settings
 
 

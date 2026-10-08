@@ -119,7 +119,7 @@ class QueueTests(unittest.TestCase):
         self.assertEqual(jobs[0]["status"], "completed")
 
     def test_worker_reuses_a_preview_cache_result(self):
-        from service.scorer import score_cache_key
+        from service.scoring_contract import score_cache_key
 
         with tempfile.TemporaryDirectory() as directory:
             store = self.make_store(directory)

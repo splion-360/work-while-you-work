@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 
 from service.score_persistence import ScorePersistenceError, normalize_score_result, persist_score_result
-from service.scorer import score_input_fingerprint
+from service.scoring_contract import score_input_fingerprint
 from service.scoring_state import ScoringStore
 
 

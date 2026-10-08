@@ -14,14 +14,11 @@ class ScoringSettingsTests(unittest.TestCase):
     def test_reads_explicit_runtime_settings(self):
         values = {
             "SCORING_DB_PATH": "/tmp/scores.sqlite3",
-            "OLLAMA_URL": "http://ollama:11434",
             "EMBEDDING_MODEL": "embeddinggemma:latest",
             "SCORER_VERSION": "v2",
             "MAX_JOB_DESCRIPTION_CHARS": "42000",
             "MIN_JOB_DESCRIPTION_CHARS": "250",
-            "OLLAMA_TIMEOUT_SECONDS": "45",
             "JOB_DESCRIPTION_RETENTION_DAYS": "180",
-            "GPU_MODE": "required",
             "RECONCILIATION_INTERVAL_SECONDS": "600",
             "PUBLICATION_UNCERTAINTY_SECONDS": "1200",
             "SCORING_BACKEND": "huggingface",
@@ -45,8 +42,7 @@ class ScoringSettingsTests(unittest.TestCase):
         self.assertEqual(settings.database_path, Path("/tmp/scores.sqlite3"))
         self.assertEqual(settings.max_job_description_chars, 42000)
         self.assertEqual(settings.min_job_description_chars, 250)
-        self.assertEqual(settings.ollama_timeout_seconds, 45)
-        self.assertEqual(settings.gpu_mode, "required")
+        self.assertEqual(settings.job_description_retention_days, 180)
         self.assertEqual(settings.reconciliation_interval_seconds, 600)
         self.assertEqual(settings.publication_uncertainty_seconds, 1200)
         self.assertEqual(hosted_values["backend"], "huggingface")
@@ -62,14 +58,14 @@ class ScoringSettingsTests(unittest.TestCase):
             "resume_content_hash": "resume-hash",
             "job_description_hash": "job-hash",
         }
-        from service.scorer import score_input_fingerprint
+        from service.scoring_contract import score_input_fingerprint
 
         first = score_input_fingerprint(scoring_input, "scorer", "model", "revision-1")
         second = score_input_fingerprint(scoring_input, "scorer", "model", "revision-2")
         self.assertNotEqual(first, second)
 
     def test_comparison_cache_ignores_application_identity(self):
-        from service.scorer import role_company_key, score_cache_key
+        from service.scoring_contract import role_company_key, score_cache_key
 
         first = {
             "application_key": "app-1",
@@ -108,18 +104,12 @@ class ScoringSettingsTests(unittest.TestCase):
     def test_rejects_an_unknown_scoring_backend(self):
         with patch.dict(
             os.environ,
-            {"GPU_MODE": "required", "SCORING_BACKEND": "unknown"},
+            {"SCORING_BACKEND": "unknown"},
             clear=True,
         ):
             settings = ScoringSettings.from_env()
             with self.assertRaisesRegex(ValueError, "SCORING_BACKEND"):
                 _ = settings.scoring_backend
-
-    def test_rejects_an_unknown_gpu_mode(self):
-        with patch.dict(os.environ, {"GPU_MODE": "sometimes"}, clear=True):
-            with self.assertRaisesRegex(ValueError, "GPU_MODE"):
-                ScoringSettings.from_env()
-
 
 class ScoringStoreTests(unittest.TestCase):
     def test_initialization_is_idempotent_and_enables_safety_pragmas(self):

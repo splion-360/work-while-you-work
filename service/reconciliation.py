@@ -2,9 +2,9 @@ from collections import Counter
 from pathlib import Path
 
 try:
-    from service.scorer import file_hash, score_input_fingerprint
+    from service.scoring_contract import file_hash, score_input_fingerprint
 except ModuleNotFoundError:
-    from scorer import file_hash, score_input_fingerprint
+    from scoring_contract import file_hash, score_input_fingerprint
 
 
 def _property_text(page, name):

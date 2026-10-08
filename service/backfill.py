@@ -9,13 +9,13 @@ from pathlib import Path
 try:
     from service.config import ScoringSettings
     from service.notion import NotionClient
-    from service.scorer import score_input_fingerprint
+    from service.scoring_contract import score_input_fingerprint
     from service.scoring_state import ScoringStore
     from service.server import file_hash, prepare_scoring_input, resume_catalog
 except ModuleNotFoundError:
     from config import ScoringSettings
     from notion import NotionClient
-    from scorer import score_input_fingerprint
+    from scoring_contract import score_input_fingerprint
     from scoring_state import ScoringStore
     from server import file_hash, prepare_scoring_input, resume_catalog
 

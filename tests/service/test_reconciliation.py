@@ -4,7 +4,7 @@ from contextlib import closing
 from pathlib import Path
 
 from service.reconciliation import reconcile
-from service.scorer import score_input_fingerprint
+from service.scoring_contract import score_input_fingerprint
 from service.scoring_state import ScoringStore
 
 

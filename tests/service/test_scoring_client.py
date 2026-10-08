@@ -5,7 +5,7 @@ import unittest
 from types import SimpleNamespace
 from unittest.mock import Mock, patch
 
-from service.scorer import ScoringError, score_input_fingerprint
+from service.scoring_contract import ScoringError, score_input_fingerprint
 from service.scoring_client import (
     HuggingFaceSpaceClient,
     ScoringEngineClient,

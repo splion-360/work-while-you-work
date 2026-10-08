@@ -5,14 +5,14 @@ import urllib.error
 import urllib.request
 
 try:
-    from service.scorer import (
+    from service.scoring_contract import (
         ScoringError,
         extract_pdf_text,
         file_hash,
         score_input_fingerprint,
     )
 except ModuleNotFoundError:
-    from scorer import ScoringError, extract_pdf_text, file_hash, score_input_fingerprint
+    from scoring_contract import ScoringError, extract_pdf_text, file_hash, score_input_fingerprint
 
 
 class HostedScoringUnavailable(ScoringError):

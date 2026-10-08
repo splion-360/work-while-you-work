@@ -18,9 +18,9 @@ from resume_jd_scoring.embeddings import model_fingerprint
 from resume_jd_scoring.inference import BinaryResumeJDScorer
 
 try:
-    from service.scorer import score_input_fingerprint
+    from service.scoring_contract import score_input_fingerprint
 except ModuleNotFoundError:
-    from scorer import score_input_fingerprint
+    from scoring_contract import score_input_fingerprint
 
 
 def score_band(score):

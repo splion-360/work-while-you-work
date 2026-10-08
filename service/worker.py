@@ -12,7 +12,7 @@ try:
     from service.score_persistence import persist_score_result
     from service.reconciliation import reconcile
     from service.scoring_client import create_scoring_client
-    from service.scorer import score_cache_key
+    from service.scoring_contract import score_cache_key
     from service.scoring_state import ScoringStore
 except ModuleNotFoundError:
     from config import ScoringSettings
@@ -20,7 +20,7 @@ except ModuleNotFoundError:
     from score_persistence import persist_score_result
     from reconciliation import reconcile
     from scoring_client import create_scoring_client
-    from scorer import score_cache_key
+    from scoring_contract import score_cache_key
     from scoring_state import ScoringStore
 
 
