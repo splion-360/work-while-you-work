@@ -7,10 +7,7 @@ import urllib.request
 import uuid
 from datetime import datetime, timezone
 
-try:
-    from service.notion import NotionClient
-except ModuleNotFoundError:
-    from notion import NotionClient
+from service.notion import NotionClient
 
 
 def request_json(url, payload=None, headers=None):

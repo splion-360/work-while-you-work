@@ -1,7 +1,7 @@
 services:
   job-tracker:
     build: .
-    command: ["python", "service/server.py"]
+    command: ["python", "-m", "service.server"]
     env_file:
       - .env
       - .env.docker
@@ -26,7 +26,7 @@ services:
       mlflow:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "python", "service/healthcheck.py", "api"]
+      test: ["CMD", "python", "-m", "service.healthcheck", "api"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -34,7 +34,7 @@ services:
 
   scoring-worker:
     build: .
-    command: ["python", "service/worker.py"]
+    command: ["python", "-m", "service.worker"]
     env_file:
       - .env
       - .env.docker
@@ -57,7 +57,7 @@ services:
       mlflow:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "python", "service/healthcheck.py", "worker"]
+      test: ["CMD", "python", "-m", "service.healthcheck", "worker"]
       interval: 30s
       timeout: 5s
       retries: 5
@@ -87,7 +87,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.scoring
-    command: ["python", "service/register_model.py"]
+    command: ["python", "-m", "service.register_model"]
     env_file:
       - .env.docker
     environment:
@@ -108,7 +108,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.scoring
-    command: ["python", "service/scoring_engine.py"]
+    command: ["python", "-m", "service.scoring_engine"]
     env_file:
       - .env.docker
     environment:

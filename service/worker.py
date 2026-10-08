@@ -6,22 +6,13 @@ import time
 import uuid
 import json
 
-try:
-    from service.config import ScoringSettings
-    from service.notion import NotionClient
-    from service.score_persistence import persist_score_result
-    from service.reconciliation import reconcile
-    from service.scoring_client import create_scoring_client
-    from service.scoring_contract import score_cache_key
-    from service.scoring_state import ScoringStore
-except ModuleNotFoundError:
-    from config import ScoringSettings
-    from notion import NotionClient
-    from score_persistence import persist_score_result
-    from reconciliation import reconcile
-    from scoring_client import create_scoring_client
-    from scoring_contract import score_cache_key
-    from scoring_state import ScoringStore
+from service.config import ScoringSettings
+from service.notion import NotionClient
+from service.reconciliation import reconcile
+from service.score_persistence import persist_score_result
+from service.scoring_client import create_scoring_client
+from service.scoring_contract import score_cache_key
+from service.scoring_state import ScoringStore
 
 
 def process_one_job(

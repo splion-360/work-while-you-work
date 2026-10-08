@@ -9,25 +9,17 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, unquote, urlparse
 
-try:
-    from service.config import ScoringSettings
-    from service.notion import NotionClient
-    from service.score_persistence import ScorePersistenceError, persist_score_result
-    from service.scoring_contract import (
-        file_hash,
-        role_company_key,
-        score_cache_key,
-        score_input_fingerprint,
-    )
-    from service.scoring_client import create_scoring_client
-    from service.scoring_state import ScoringStore
-except ModuleNotFoundError:
-    from config import ScoringSettings
-    from notion import NotionClient
-    from score_persistence import ScorePersistenceError, persist_score_result
-    from scoring_contract import file_hash, role_company_key, score_cache_key, score_input_fingerprint
-    from scoring_client import create_scoring_client
-    from scoring_state import ScoringStore
+from service.config import ScoringSettings
+from service.notion import NotionClient
+from service.score_persistence import ScorePersistenceError, persist_score_result
+from service.scoring_client import create_scoring_client
+from service.scoring_contract import (
+    file_hash,
+    role_company_key,
+    score_cache_key,
+    score_input_fingerprint,
+)
+from service.scoring_state import ScoringStore
 
 RESUMES_DIR = Path(os.getenv("RESUMES_DIR", "/home/splion/Desktop/personal/resume/resumes"))
 PORT = int(os.getenv("PORT", "8765"))

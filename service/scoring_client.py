@@ -4,15 +4,13 @@ import time
 import urllib.error
 import urllib.request
 
-try:
-    from service.scoring_contract import (
-        ScoringError,
-        extract_pdf_text,
-        file_hash,
-        score_input_fingerprint,
-    )
-except ModuleNotFoundError:
-    from scoring_contract import ScoringError, extract_pdf_text, file_hash, score_input_fingerprint
+from service.mlflow_telemetry import get_mlflow_telemetry
+from service.scoring_contract import (
+    ScoringError,
+    extract_pdf_text,
+    file_hash,
+    score_input_fingerprint,
+)
 
 
 class HostedScoringUnavailable(ScoringError):
@@ -274,10 +272,6 @@ class HuggingFaceSpaceClient(BaseScoringClient):
 
 def create_scoring_client(settings):
     if settings.scoring_backend == "huggingface":
-        try:
-            from service.mlflow_telemetry import get_mlflow_telemetry
-        except ModuleNotFoundError:
-            from mlflow_telemetry import get_mlflow_telemetry
         return HuggingFaceSpaceClient(
             settings.hf_space_url,
             settings.hf_token,

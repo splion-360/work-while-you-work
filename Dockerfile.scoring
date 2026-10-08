@@ -21,4 +21,4 @@ ENV PYTHONUNBUFFERED=1
 ENV PYTHONPATH=/app/ml/src:/app
 ENV RESUMES_DIR=/resumes
 
-CMD ["python", "service/scoring_engine.py"]
+CMD ["python", "-m", "service.scoring_engine"]

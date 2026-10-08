@@ -2,10 +2,7 @@ import json
 import math
 from contextlib import nullcontext
 
-try:
-    from service.scoring_contract import score_band, score_cache_key, score_input_fingerprint
-except ModuleNotFoundError:
-    from scoring_contract import score_band, score_cache_key, score_input_fingerprint
+from service.scoring_contract import score_band, score_cache_key, score_input_fingerprint
 
 
 class ScorePersistenceError(RuntimeError):

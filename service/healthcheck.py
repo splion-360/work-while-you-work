@@ -3,12 +3,8 @@ import json
 import sys
 import urllib.request
 
-try:
-    from service.config import ScoringSettings
-    from service.scoring_state import ScoringStore
-except ModuleNotFoundError:
-    from config import ScoringSettings
-    from scoring_state import ScoringStore
+from service.config import ScoringSettings
+from service.scoring_state import ScoringStore
 
 
 def api_healthy():

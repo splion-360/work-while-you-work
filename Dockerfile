@@ -11,4 +11,4 @@ ENV PYTHONUNBUFFERED=1
 ENV RESUMES_DIR=/resumes
 EXPOSE 8765
 
-CMD ["python", "service/server.py"]
+CMD ["python", "-m", "service.server"]
