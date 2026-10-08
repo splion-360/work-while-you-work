@@ -91,7 +91,7 @@ time outside the GPU function.
 
 ## Benchmark
 
-```bash { name=benchmark-zerogpu }
+```bash
 cd "$(git rev-parse --show-toplevel)"
 set -a
 source .env
@@ -130,7 +130,7 @@ After the rollback proof, version 2 was restored as `champion`, redeployed at Sp
 commit `d4a7392...`, and smoke-tested. The final smoke returned score `86.6`,
 MLflow version `2`, registration run `a86bef...`, and fingerprint `10cabd...`.
 
-```bash { name=rollback-to-version-1 }
+```bash
 cd "$(git rev-parse --show-toplevel)"
 set -a
 source .env
@@ -146,7 +146,7 @@ ml/.venv/bin/python deploy/smoke_huggingface_space.py \
   --mlflow-model-version 1
 ```
 
-```bash { name=restore-version-2 }
+```bash
 cd "$(git rev-parse --show-toplevel)"
 set -a
 source .env

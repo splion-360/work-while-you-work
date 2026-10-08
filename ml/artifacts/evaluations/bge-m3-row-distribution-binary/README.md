@@ -16,7 +16,7 @@ The production score is the calibrated probability of `Good Fit`, multiplied by 
 
 ## Train
 
-```bash { name=train-binary-classifier }
+```bash
 cd "$(git rev-parse --show-toplevel)/ml"
 .venv/bin/python scripts/train_classifier.py \
   --feature-report artifacts/data__bge_m3_row_distribution_features.json \
@@ -48,7 +48,7 @@ Pooled uncalibrated probability metrics: ROC-AUC `0.7868`, average precision `0.
 
 Platt scaling is fitted separately on each fold's graph-disjoint inner-validation rows. Outer-test labels are not used to fit calibration.
 
-```bash { name=calibrate-binary-classifier }
+```bash
 cd "$(git rev-parse --show-toplevel)/ml"
 .venv/bin/python scripts/calibrate_binary_classifier.py \
   --training-report artifacts/train__bge_m3_row_distribution_binary.json \
@@ -100,7 +100,7 @@ Compared with calibrated `0.5` classification, pooled Good Fit recall rises from
 
 Fold 1 is selected because it has the highest inner-validation macro F1 (`0.6995`). Selection does not use outer-test results.
 
-```bash { name=package-binary-scorer }
+```bash
 cd "$(git rev-parse --show-toplevel)/ml"
 .venv/bin/python scripts/package_binary_scorer.py \
   --training-report artifacts/train__bge_m3_row_distribution_binary.json \
@@ -164,7 +164,7 @@ At the calibrated `0.5` threshold, the model favors Good Fit precision over reca
 
 ## Validation
 
-```bash { name=validate-binary-scorer }
+```bash
 cd "$(git rev-parse --show-toplevel)/ml"
 .venv/bin/ruff check src scripts tests
 .venv/bin/pytest -q

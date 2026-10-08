@@ -224,8 +224,15 @@ build/
 exports/
 ml/data/
 ml/artifacts/*
-!ml/artifacts/*.runme
 !ml/artifacts/*.html
+!ml/artifacts/evaluations/
+!ml/artifacts/models/
+ml/artifacts/evaluations/*
+ml/artifacts/models/*
+!ml/artifacts/evaluations/*/
+!ml/artifacts/models/*/
+!ml/artifacts/evaluations/*/README.md
+!ml/artifacts/models/*/README.md
 
 # Editor and OS files
 .DS_Store

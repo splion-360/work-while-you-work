@@ -24,7 +24,7 @@ The exact-match kernel uses `μ = 1.0, σ = 0.001`. Ten soft-match kernels use m
 
 ## Reproduce
 
-```bash { name=materialize-knrm-features }
+```bash
 cd "$(git rev-parse --show-toplevel)/ml"
 .venv/bin/python scripts/materialize_knrm_features.py \
   --token-metadata artifacts/model__bge_m3_multivector_generation.json \
@@ -32,7 +32,7 @@ cd "$(git rev-parse --show-toplevel)/ml"
   --fold 0
 ```
 
-```bash { name=train-knrm-fold-zero }
+```bash
 cd "$(git rev-parse --show-toplevel)/ml"
 .venv/bin/python scripts/train_classifier.py \
   --feature-report artifacts/data__bge_m3_knrm_features.json \
@@ -44,7 +44,7 @@ cd "$(git rev-parse --show-toplevel)/ml"
   --experiment resume-jd-bge-m3-knrm
 ```
 
-```bash { name=evaluate-knrm-fold-zero }
+```bash
 cd "$(git rev-parse --show-toplevel)/ml"
 .venv/bin/python scripts/evaluate_classifier.py \
   --training-report artifacts/train__bge_m3_knrm_classifier.json \
@@ -55,7 +55,7 @@ cd "$(git rev-parse --show-toplevel)/ml"
 
 The remaining folds use the same commands and hyperparameters with fold-specific report names:
 
-```bash { name=run-knrm-remaining-folds }
+```bash
 cd "$(git rev-parse --show-toplevel)/ml"
 for fold in 1 2; do
   .venv/bin/python scripts/materialize_knrm_features.py \

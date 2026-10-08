@@ -8,7 +8,7 @@ Generate the official frozen BGE-M3 ColBERT token representation for every canon
 
 ## Reproduce
 
-```bash { name=generate-multivector-cache }
+```bash
 cd "$(git rev-parse --show-toplevel)/ml"
 .venv/bin/python scripts/generate_multivector_embeddings.py \
   --model-dir data/models/bge-m3 \

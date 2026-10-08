@@ -10,7 +10,7 @@ This diagnosis reuses the materialized K-NRM features. It does not run BGE-M3 an
 
 ## Reproduce
 
-```bash { name=diagnose-knrm-features }
+```bash
 cd "$(git rev-parse --show-toplevel)/ml"
 .venv/bin/python scripts/diagnose_knrm_features.py
 ```

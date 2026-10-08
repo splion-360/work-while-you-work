@@ -19,7 +19,7 @@ BGE-M3 uses its native 8,192-token context and no prompt. EmbeddingGemma uses a 
 
 ## Reproduce
 
-```bash { name=train-bge-linear-fold-zero }
+```bash
 cd "$(git rev-parse --show-toplevel)/ml"
 .venv/bin/python scripts/train_classifier.py \
   --feature-report artifacts/data__bge_m3_pair_features.json \
@@ -31,7 +31,7 @@ cd "$(git rev-parse --show-toplevel)/ml"
   --experiment resume-jd-linear-bge-m3
 ```
 
-```bash { name=evaluate-bge-representations }
+```bash
 cd "$(git rev-parse --show-toplevel)/ml"
 .venv/bin/python scripts/evaluate_classifier.py \
   --training-report artifacts/train__bge_m3_linear_classifier.json \

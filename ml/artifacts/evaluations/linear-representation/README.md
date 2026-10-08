@@ -18,7 +18,7 @@ may already organize resume-JD pairs by fit label. A learned linear projection f
 
 ## Reproduce
 
-```bash { name=train-linear-fold-zero }
+```bash
 cd "$(git rev-parse --show-toplevel)/ml"
 .venv/bin/python scripts/train_classifier.py \
   --device cuda \
@@ -28,7 +28,7 @@ cd "$(git rev-parse --show-toplevel)/ml"
   --experiment resume-jd-linear
 ```
 
-```bash { name=analyze-representations }
+```bash
 cd "$(git rev-parse --show-toplevel)/ml"
 .venv/bin/python scripts/evaluate_classifier.py --fold 0
 ```

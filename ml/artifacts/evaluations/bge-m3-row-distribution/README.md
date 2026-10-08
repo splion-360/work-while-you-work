@@ -24,7 +24,7 @@ For every kernel, the model retains the mean, population standard deviation, min
 
 ## Reproduce
 
-```bash { name=materialize-row-distribution-features }
+```bash
 cd "$(git rev-parse --show-toplevel)/ml"
 .venv/bin/python scripts/materialize_knrm_features.py \
   --token-metadata artifacts/model__bge_m3_multivector_generation.json \
@@ -36,7 +36,7 @@ cd "$(git rev-parse --show-toplevel)/ml"
 
 The all-folds artifact computes every pair once. Training and evaluation continue to select rows using each fold's existing role column.
 
-```bash { name=train-row-distribution-classifier }
+```bash
 cd "$(git rev-parse --show-toplevel)/ml"
 .venv/bin/python scripts/train_classifier.py \
   --feature-report artifacts/data__bge_m3_row_distribution_features.json \
@@ -48,7 +48,7 @@ cd "$(git rev-parse --show-toplevel)/ml"
   --experiment resume-jd-bge-m3-row-distribution
 ```
 
-```bash { name=evaluate-row-distribution-classifier }
+```bash
 cd "$(git rev-parse --show-toplevel)/ml"
 for fold in 0 1 2; do
   .venv/bin/python scripts/evaluate_classifier.py \
@@ -59,7 +59,7 @@ for fold in 0 1 2; do
 done
 ```
 
-```bash { name=diagnose-row-distribution-features }
+```bash
 cd "$(git rev-parse --show-toplevel)/ml"
 .venv/bin/python scripts/diagnose_knrm_features.py \
   --feature-reports artifacts/data__bge_m3_row_distribution_features.json \

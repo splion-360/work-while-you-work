@@ -8,7 +8,7 @@ Generate one frozen, reproducible 1,024-dimensional BGE-M3 dense embedding for e
 
 ## Reproduce
 
-```bash { name=download-model }
+```bash
 cd "$(git rev-parse --show-toplevel)/ml"
 set -a
 source .env
@@ -16,7 +16,7 @@ set +a
 .venv/bin/hf download BAAI/bge-m3 --local-dir data/models/bge-m3
 ```
 
-```bash { name=generate }
+```bash
 cd "$(git rev-parse --show-toplevel)/ml"
 .venv/bin/python scripts/generate_embeddings.py \
   --model-dir data/models/bge-m3 \
@@ -30,7 +30,7 @@ cd "$(git rev-parse --show-toplevel)/ml"
   --report artifacts/model__bge_m3_embedding_generation.json
 ```
 
-```bash { name=materialize-pairs }
+```bash
 cd "$(git rev-parse --show-toplevel)/ml"
 .venv/bin/python scripts/materialize_pair_features.py \
   --embedding-metadata data/embeddings/c99a65e15f7d62d3f9ea89d341979ea8d0af4232613c9c2dc1de2f409ecefbd3/metadata.json \
