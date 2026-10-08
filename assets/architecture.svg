@@ -1,19 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1040" viewBox="0 0 1600 1040" role="img" aria-labelledby="title desc">
-  <title id="title">BGE-M3-based resume and job-description scoring model training</title>
-  <desc id="desc">Exploded model-development flow from graph-disjoint data splits through frozen BGE-M3 token vectors, K-NRM features, fold training, calibration, outer testing, MLflow tracking, and model packaging.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="850" viewBox="0 0 1600 850" role="img" aria-label="Resume and job-description scoring model training flow">
   <defs>
     <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#5b6570"/></marker>
     <style>
       @font-face{font-family:Lexend;src:url('fonts/Lexend.ttf') format('truetype');font-weight:100 900;font-style:normal}
-      text{font-family:Lexend,Arial,sans-serif;fill:#17212b}.section{fill:#f6f8fa;stroke:#aab4be;stroke-width:1.5}.section-title{font-size:13px;font-weight:700;fill:#44515e}.node{stroke-width:1.5}.main{font-size:13px;font-weight:700}.sub{font-size:10.5px;fill:#44515e}.edge{fill:none;stroke:#5b6570;stroke-width:2;marker-end:url(#arrow)}.support{fill:none;stroke:#8362a5;stroke-width:2;stroke-dasharray:6 5;marker-end:url(#arrow)}.note{font-size:10.5px;fill:#596674;font-style:italic}
+      text{font-family:Lexend,Arial,sans-serif;fill:#17212b}.node{stroke-width:1.5}.main{font-size:13px;font-weight:700}.sub{font-size:10.5px;fill:#44515e}.edge{fill:none;stroke:#5b6570;stroke-width:2;marker-end:url(#arrow)}.support{fill:none;stroke:#8362a5;stroke-width:2;stroke-dasharray:6 5;marker-end:url(#arrow)}
     </style>
   </defs>
-  <rect width="1600" height="1040" fill="#fff"/>
-  <text x="30" y="38" font-size="24" font-weight="700">BGE-M3-based resume x JD scoring model training</text>
-  <text x="30" y="60" font-size="12" fill="#596674">BGE-M3 is frozen. This project trains and calibrates the downstream fit classifier.</text>
-
-  <rect class="section" x="25" y="85" width="330" height="390" rx="3"/>
-  <text class="section-title" x="42" y="112">1 · DATASET AND LEAKAGE CONTROL</text>
+  <rect width="1600" height="850" fill="#fff"/>
+  <g transform="translate(0 -70)">
   <g text-anchor="middle">
     <rect class="node" x="75" y="140" width="220" height="62" rx="5" fill="#e8f1fb" stroke="#4b78a8"/>
     <text class="main" x="185" y="166">Labeled resume x JD pairs</text><text class="sub" x="185" y="186">No Fit · Potential Fit · Good Fit</text>
@@ -27,8 +21,6 @@
   <path class="edge" d="M185 202V222H110V245"/><path class="edge" d="M185 202V222H264V245"/>
   <path class="edge" d="M110 307V330H185V350"/><path class="edge" d="M264 307V330H185V350"/>
 
-  <rect class="section" x="380" y="85" width="510" height="390" rx="3"/>
-  <text class="section-title" x="397" y="112">2 · SHARED FROZEN BGE-M3 ENCODER</text>
   <g text-anchor="middle">
     <rect class="node" x="410" y="150" width="120" height="54" rx="5" fill="#e8f1fb" stroke="#4b78a8"/><text class="main" x="470" y="174">Resume text</text><text class="sub" x="470" y="191">up to 8,192 tokens</text>
     <rect class="node" x="410" y="345" width="120" height="54" rx="5" fill="#e8f1fb" stroke="#4b78a8"/><text class="main" x="470" y="369">JD text</text><text class="sub" x="470" y="386">up to 8,192 tokens</text>
@@ -44,8 +36,6 @@
   <path class="support" d="M690 274H730"/>
   <path class="edge" d="M797 220V188"/><path class="edge" d="M797 328V360"/>
 
-  <rect class="section" x="915" y="85" width="660" height="390" rx="3"/>
-  <text class="section-title" x="932" y="112">3 · TOKEN INTERACTION AND FEATURE MATERIALIZATION</text>
   <g text-anchor="middle">
     <rect class="node" x="950" y="145" width="180" height="68" rx="5" fill="#e7f4ec" stroke="#4c8b65"/><text class="main" x="1040" y="172">Token interaction</text><text class="sub" x="1040" y="192">S = J × Rᵀ</text>
     <rect class="node" x="1180" y="145" width="165" height="68" rx="5" fill="#fff3d9" stroke="#b98525"/><text class="main" x="1262" y="172">11 Gaussian kernels</text><text class="sub" x="1262" y="192">soft-match similarity bands</text>
@@ -59,8 +49,6 @@
   <path class="edge" d="M295 388H360V445H995V411H1030"/>
   <path class="edge" d="M173 276H370V177H410"/><path class="edge" d="M327 276H370V372H410"/>
 
-  <rect class="section" x="25" y="500" width="1550" height="505" rx="3"/>
-  <text class="section-title" x="42" y="527">4 · FOLD TRAINING, CALIBRATION, AND MODEL SELECTION</text>
   <g text-anchor="middle">
     <rect class="node" x="65" y="575" width="165" height="68" rx="5" fill="#e8f1fb" stroke="#4b78a8"/><text class="main" x="147" y="602">Fold-aware examples</text><text class="sub" x="147" y="622">77 features + binary label</text>
     <rect class="node" x="285" y="555" width="180" height="74" rx="5" fill="#fff3d9" stroke="#b98525"/><text class="main" x="375" y="581">Train partition</text><text class="sub" x="375" y="601">inner graph-disjoint split</text><text class="sub" x="375" y="616">fit scaler on train only</text>
@@ -82,5 +70,5 @@
   <path class="edge" d="M465 858H775"/><path class="edge" d="M867 746V825"/>
   <path class="edge" d="M710 592H1000V602H1030"/><path class="support" d="M960 858H1000V625H1030"/>
   <path class="edge" d="M465 713V775H1000V839H1030"/><path class="edge" d="M1235 839H1310"/>
-  <text class="note" x="500" y="908">Outer-test labels never select the checkpoint, calibrator, or threshold.</text>
+  </g>
 </svg>
