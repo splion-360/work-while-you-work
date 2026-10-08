@@ -8,7 +8,7 @@ The matching model is the part I care about most. It is not an LLM prompt or a c
 
 ## Model architecture and training
 
-[![BGE-M3-based resume and job-description scoring model training](assets/architecture.svg)](assets/architecture.drawio)
+[![BGE-M3-based resume x JD scoring model training](assets/architecture.svg)](assets/architecture.drawio)
 
 The rendered diagram links to the editable [draw.io source](assets/architecture.drawio).
 
