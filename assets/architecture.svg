@@ -10,7 +10,7 @@
   <g transform="translate(0 -70)">
   <g text-anchor="middle">
     <rect class="node" x="75" y="140" width="220" height="62" rx="5" fill="#e8f1fb" stroke="#4b78a8"/>
-    <text class="main" x="185" y="166">Labeled resume x JD pairs</text><text class="sub" x="185" y="186">No Fit · Potential Fit · Good Fit</text>
+    <text class="main" x="185" y="176">Labeled resume x JD pairs</text>
     <rect class="node" x="48" y="245" width="125" height="62" rx="5" fill="#e8f1fb" stroke="#4b78a8"/>
     <text class="main" x="110" y="271">Resume corpus</text><text class="sub" x="110" y="290">normalized + hashed</text>
     <rect class="node" x="202" y="245" width="125" height="62" rx="5" fill="#e8f1fb" stroke="#4b78a8"/>
@@ -42,7 +42,7 @@
     <rect class="node" x="1390" y="145" width="155" height="68" rx="5" fill="#fff3d9" stroke="#b98525"/><text class="main" x="1467" y="166">Per-JD-token</text><text class="sub" x="1467" y="185">length-normalized</text><text class="sub" x="1467" y="200">log soft counts</text>
     <rect class="node" x="1270" y="275" width="180" height="82" rx="5" fill="#fff3d9" stroke="#b98525"/><text class="main" x="1360" y="300">7 distribution statistics</text><text class="sub" x="1360" y="319">mean · std · min · quartiles</text><text class="sub" x="1360" y="337">median · max</text>
     <rect class="node" x="1030" y="285" width="170" height="62" rx="5" fill="#f2ecf8" stroke="#8362a5"/><text class="main" x="1115" y="311">77 pair features</text><text class="sub" x="1115" y="331">11 kernels × 7 statistics</text>
-    <rect class="node" x="1030" y="380" width="170" height="62" rx="5" fill="#e8f1fb" stroke="#4b78a8"/><text class="main" x="1115" y="402">Binary target</text><text class="sub" x="1115" y="419">No Fit / Good Fit</text><text class="sub" x="1115" y="434">Potential Fit maps to Good Fit</text>
+    <rect class="node" x="1030" y="380" width="170" height="62" rx="5" fill="#e8f1fb" stroke="#4b78a8"/><text class="main" x="1115" y="416">Binary target</text>
   </g>
   <path class="edge" d="M865 159H915V179H950"/><path class="edge" d="M865 389H915V179H950"/>
   <path class="edge" d="M1130 179H1180"/><path class="edge" d="M1345 179H1390"/><path class="edge" d="M1467 213V245H1360V275"/><path class="edge" d="M1270 316H1200"/>
