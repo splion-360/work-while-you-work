@@ -35,7 +35,7 @@ MLflow provides experiment history, artifact lineage, and model promotion. It is
 
 ## Evaluation
 
-The checked-in evaluation record is [ml/artifacts/evaluations/bge-m3-row-distribution-binary/README.md](ml/artifacts/evaluations/bge-m3-row-distribution-binary/README.md). On 31,333 graph-disjoint outer-test pairs, the model reached:
+On 31,333 graph-disjoint outer-test pairs, the model reached:
 
 | Metric | Result |
 | --- | ---: |

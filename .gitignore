@@ -223,16 +223,7 @@ __marimo__/
 build/
 exports/
 ml/data/
-ml/artifacts/*
-!ml/artifacts/*.html
-!ml/artifacts/evaluations/
-!ml/artifacts/models/
-ml/artifacts/evaluations/*
-ml/artifacts/models/*
-!ml/artifacts/evaluations/*/
-!ml/artifacts/models/*/
-!ml/artifacts/evaluations/*/README.md
-!ml/artifacts/models/*/README.md
+ml/artifacts/
 
 # Editor and OS files
 .DS_Store
