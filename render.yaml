@@ -2,7 +2,7 @@ services:
   - type: web
     name: resume-job-tracker
     runtime: docker
-    dockerfilePath: ./Dockerfile
+    dockerfilePath: ./deploy/docker/service.Dockerfile
     healthCheckPath: /healthz
     envVars:
       - key: HOST

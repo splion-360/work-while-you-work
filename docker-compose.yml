@@ -1,6 +1,8 @@
 services:
   job-tracker:
-    build: .
+    build:
+      context: .
+      dockerfile: deploy/docker/service.Dockerfile
     command: ["python", "-m", "service.server"]
     env_file:
       - .env
@@ -33,7 +35,9 @@ services:
     restart: unless-stopped
 
   scoring-worker:
-    build: .
+    build:
+      context: .
+      dockerfile: deploy/docker/service.Dockerfile
     command: ["python", "-m", "service.worker"]
     env_file:
       - .env
@@ -68,7 +72,7 @@ services:
     image: job-tracker-mlflow:local
     build:
       context: .
-      dockerfile: Dockerfile.mlflow
+      dockerfile: deploy/docker/mlflow.Dockerfile
     command: ["mlflow", "server", "--host", "0.0.0.0", "--port", "5000", "--allowed-hosts", "mlflow:5000,localhost:5000,127.0.0.1:5000", "--backend-store-uri", "sqlite:////mlflow/tracking.db", "--artifacts-destination", "/mlflow/artifacts", "--serve-artifacts"]
     ports:
       - "127.0.0.1:5000:5000"
@@ -86,7 +90,7 @@ services:
     image: job-tracker-scoring:local
     build:
       context: .
-      dockerfile: Dockerfile.scoring
+      dockerfile: deploy/docker/scoring.Dockerfile
     command: ["python", "-m", "service.register_model"]
     env_file:
       - .env.docker
@@ -107,7 +111,7 @@ services:
     image: job-tracker-scoring:local
     build:
       context: .
-      dockerfile: Dockerfile.scoring
+      dockerfile: deploy/docker/scoring.Dockerfile
     command: ["python", "-m", "service.scoring_engine"]
     env_file:
       - .env.docker
