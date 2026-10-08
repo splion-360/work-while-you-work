@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: resume-job-tracker
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /healthz
+    envVars:
+      - key: HOST
+        value: 0.0.0.0
+      - key: PORT
+        value: 8765
+      - key: RESUMES_DIR
+        value: /resumes
+      - key: NOTION_DATABASE_ID
+        value: 9fcae6c8-c48d-482f-b9a3-f97d93b8162d
+      - key: NOTION_DATA_SOURCE_ID
+        value: bd232bfb-28c7-4097-b29d-1f47f68100b8
+      - key: NOTION_TOKEN
+        sync: false
+      - key: JOB_TRACKER_API_KEY
+        generateValue: true

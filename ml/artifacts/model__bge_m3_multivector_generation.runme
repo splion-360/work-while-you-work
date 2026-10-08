@@ -1,0 +1,59 @@
+# BGE-M3 Multi-Vector Generation
+
+Status: completed on 2026-09-07.
+
+## Objective
+
+Generate the official frozen BGE-M3 ColBERT token representation for every canonical resume and job description. Preserve token-level context for downstream interaction rather than collapsing each document to one dense vector.
+
+## Reproduce
+
+```bash { name=generate-multivector-cache }
+cd "$(git rev-parse --show-toplevel)/ml"
+.venv/bin/python scripts/generate_multivector_embeddings.py \
+  --model-dir data/models/bge-m3 \
+  --device cuda:0 \
+  --batch-size 1
+```
+
+## Encoding Contract
+
+| Property | Value |
+| --- | --- |
+| Model | `BAAI/bge-m3` |
+| Implementation | `FlagEmbedding.BGEM3FlagModel` 1.4.2 |
+| Representation | Normalized ColBERT token vectors |
+| Model parameters | Frozen |
+| Inference precision | FP16 |
+| Cache precision | FP16 |
+| Token-vector width | 1,024 |
+| Context limit | 8,192 tokens |
+| Excluded token | CLS |
+
+For a resume with `n` retained tokens and a JD with `m` retained tokens, the cached representations are `R ∈ ℝⁿˣ¹⁰²⁴` and `J ∈ ℝᵐˣ¹⁰²⁴`.
+
+## Validation
+
+- A CUDA smoke test produced the expected 11 non-CLS vectors for an 11-token input.
+- The smoke-test output shape was `(11, 1024)`.
+- Token-vector norms ranged from `0.99999994` to `1.00000012` before FP16 cache conversion.
+- The full cache contains all 643 resumes and all 351 JDs.
+- Every document fit within BGE-M3's 8,192-token context; no truncation occurred.
+
+## Corpus And Runtime
+
+| Corpus | Documents | Token vectors | Minimum | Maximum | Runtime |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Resumes | 643 | 889,715 | 238 | 5,447 | 138.392 s |
+| JDs | 351 | 202,846 | 18 | 1,771 | 32.451 s |
+
+The run used an NVIDIA GeForce RTX 3050 Laptop GPU and Torch 2.6.0 with CUDA 12.4. The cache fingerprint is `4a9621f07c79b41eeef5b8f860d44f9643f5579318e92531c7a0ba823beb7756`.
+
+## Outputs
+
+```text
+data/multivector/4a9621f07c79b41eeef5b8f860d44f9643f5579318e92531c7a0ba823beb7756/resumes_vectors.npy
+data/multivector/4a9621f07c79b41eeef5b8f860d44f9643f5579318e92531c7a0ba823beb7756/resumes_index.parquet
+data/multivector/4a9621f07c79b41eeef5b8f860d44f9643f5579318e92531c7a0ba823beb7756/jds_vectors.npy
+data/multivector/4a9621f07c79b41eeef5b8f860d44f9643f5579318e92531c7a0ba823beb7756/jds_index.parquet
+```

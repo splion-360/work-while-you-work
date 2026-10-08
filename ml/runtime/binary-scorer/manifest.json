@@ -1,0 +1,85 @@
+{
+  "format_version": 1,
+  "labels": [
+    "No Fit",
+    "Good Fit"
+  ],
+  "label_mode": "binary-potential-positive",
+  "selected_fold": 1,
+  "selection_rule": "highest inner-validation macro F1",
+  "source_parent_mlflow_run_id": "8dcf84d370b04a469feac0411306dd27",
+  "source_mlflow_run_id": "d35010e692c44a83993c4dfb0c6cf989",
+  "classifier": {
+    "path": "classifier.pt",
+    "sha256": "d04a07bf64428df362144dff1916b479059c8c66a6ac02ece2fe48c14d710d87",
+    "input_dimension": 77
+  },
+  "calibration": {
+    "method": "Platt scaling",
+    "slope": 1.1530233530363463,
+    "intercept": -1.0327843527939404
+  },
+  "decision_threshold": {
+    "objective": "maximum validation macro F1",
+    "threshold": 0.39419135451316833,
+    "validation_macro_f1": 0.7326781923258777
+  },
+  "encoder": {
+    "name": "BAAI/bge-m3",
+    "fingerprint": "4a9621f07c79b41eeef5b8f860d44f9643f5579318e92531c7a0ba823beb7756",
+    "max_length": 8192,
+    "representation": "normalized_colbert_token_vectors"
+  },
+  "features": {
+    "fingerprint": "e90ccb0920f89bd28445c973ad1400d318c8641f760313a68589a65dd90dff23",
+    "contract": {
+      "compute_dtype": "float32",
+      "feature_definition": "BGE-M3 row-distribution K-NRM features",
+      "fold": "all",
+      "included_roles": "all pairs; downstream consumers select fold roles",
+      "jd_aggregation": [
+        "mean",
+        "standard_deviation",
+        "minimum",
+        "q25",
+        "median",
+        "q75",
+        "maximum"
+      ],
+      "jd_side": "query",
+      "kernel_means": [
+        1.0,
+        0.9,
+        0.7,
+        0.5,
+        0.29999999999999993,
+        0.09999999999999998,
+        -0.09999999999999998,
+        -0.30000000000000016,
+        -0.5000000000000001,
+        -0.7000000000000001,
+        -0.9
+      ],
+      "kernel_scale": 0.01,
+      "kernel_standard_deviations": [
+        0.001,
+        0.1,
+        0.1,
+        0.1,
+        0.1,
+        0.1,
+        0.1,
+        0.1,
+        0.1,
+        0.1,
+        0.1
+      ],
+      "minimum_soft_count": 1e-10,
+      "pipeline_version": 2,
+      "pooling": "row-distribution",
+      "resume_block_size": 4096,
+      "resume_soft_count_normalization": "divide by resume token count",
+      "resume_token_budget": 32768
+    }
+  }
+}

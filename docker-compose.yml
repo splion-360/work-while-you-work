@@ -1,0 +1,143 @@
+services:
+  job-tracker:
+    build: .
+    command: ["python", "service/server.py"]
+    env_file:
+      - .env
+      - .env.docker
+    environment:
+      EMBEDDING_MODEL: BAAI/bge-m3-colbert
+      SCORER_VERSION: bge-m3-knrm-binary-v1
+      SCORING_BACKEND: ${SCORING_BACKEND:-huggingface}
+      SCORING_ENGINE_URL: http://scoring-engine:8770
+      HF_SPACE_URL: https://splion360-resume-jd-scorer.hf.space
+      HF_MODEL_REVISION: 8b062ade79600eed631cc6c48dc6f4b683fcd1c9
+      HF_MODEL_FINGERPRINT: 10cabd579086e89aef2ae3a8ab041f656de6f1e886e3a1c2494cfddfab416dee
+      MLFLOW_MODEL_VERSION: "2"
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+      MLFLOW_INFERENCE_EXPERIMENT: resume-jd-production-inference
+      SCORE_CACHE_TTL_SECONDS: "300"
+    ports:
+      - "127.0.0.1:8765:8765"
+    volumes:
+      - ../resumes:/resumes:ro
+      - scoring-data:/data
+    depends_on:
+      mlflow:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "service/healthcheck.py", "api"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  scoring-worker:
+    build: .
+    command: ["python", "service/worker.py"]
+    env_file:
+      - .env
+      - .env.docker
+    environment:
+      EMBEDDING_MODEL: BAAI/bge-m3-colbert
+      SCORER_VERSION: bge-m3-knrm-binary-v1
+      SCORING_BACKEND: ${SCORING_BACKEND:-huggingface}
+      SCORING_ENGINE_URL: http://scoring-engine:8770
+      HF_SPACE_URL: https://splion360-resume-jd-scorer.hf.space
+      HF_MODEL_REVISION: 8b062ade79600eed631cc6c48dc6f4b683fcd1c9
+      HF_MODEL_FINGERPRINT: 10cabd579086e89aef2ae3a8ab041f656de6f1e886e3a1c2494cfddfab416dee
+      MLFLOW_MODEL_VERSION: "2"
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+      MLFLOW_INFERENCE_EXPERIMENT: resume-jd-production-inference
+      SCORE_CACHE_TTL_SECONDS: "300"
+    volumes:
+      - ../resumes:/resumes:ro
+      - scoring-data:/data
+    depends_on:
+      mlflow:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "service/healthcheck.py", "worker"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  mlflow:
+    image: job-tracker-mlflow:local
+    build:
+      context: .
+      dockerfile: Dockerfile.mlflow
+    command: ["mlflow", "server", "--host", "0.0.0.0", "--port", "5000", "--allowed-hosts", "mlflow:5000,localhost:5000,127.0.0.1:5000", "--backend-store-uri", "sqlite:////mlflow/tracking.db", "--artifacts-destination", "/mlflow/artifacts", "--serve-artifacts"]
+    ports:
+      - "127.0.0.1:5000:5000"
+    volumes:
+      - mlflow-data:/mlflow
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/health', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+
+  mlflow-model-init:
+    profiles: ["local-scoring"]
+    image: job-tracker-scoring:local
+    build:
+      context: .
+      dockerfile: Dockerfile.scoring
+    command: ["python", "service/register_model.py"]
+    env_file:
+      - .env.docker
+    environment:
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+      MLFLOW_MODEL_NAME: resume-jd-binary-scorer
+      MLFLOW_MODEL_ALIAS: champion
+    volumes:
+      - ./ml/runtime:/app/ml/runtime:ro
+      - ./service:/app/service:ro
+    depends_on:
+      mlflow:
+        condition: service_healthy
+    restart: "no"
+
+  scoring-engine:
+    profiles: ["local-scoring"]
+    image: job-tracker-scoring:local
+    build:
+      context: .
+      dockerfile: Dockerfile.scoring
+    command: ["python", "service/scoring_engine.py"]
+    env_file:
+      - .env.docker
+    environment:
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+      MLFLOW_MODEL_NAME: resume-jd-binary-scorer
+      MLFLOW_MODEL_ALIAS: champion
+      BGE_MODEL_PATH: /models/bge-m3
+      SCORING_DEVICE: cuda:0
+      EMBEDDING_MODEL: BAAI/bge-m3-colbert
+      SCORER_VERSION: bge-m3-knrm-binary-v1
+    gpus: all
+    volumes:
+      - ../resumes:/resumes:ro
+      - ./ml/data/models/bge-m3:/models/bge-m3:ro
+      - ./ml/src:/app/ml/src:ro
+      - ./service:/app/service:ro
+    depends_on:
+      mlflow:
+        condition: service_healthy
+      mlflow-model-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8770/healthz', timeout=3)"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 120s
+    restart: unless-stopped
+
+volumes:
+  scoring-data:
+  mlflow-data:

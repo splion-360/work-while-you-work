@@ -1,0 +1,581 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Resume Job Tracker</title>
+    <style>
+      @font-face { font-family: "Comic Neue"; src: url("fonts/ComicNeue-Regular.otf") format("opentype"); font-style: normal; font-weight: 400; font-display: swap; }
+      @font-face { font-family: "Comic Neue"; src: url("fonts/ComicNeue-Bold.otf") format("opentype"); font-style: normal; font-weight: 600; font-display: swap; }
+      @font-face { font-family: "Comic Neue"; src: url("fonts/ComicNeue-Bold.otf") format("opentype"); font-style: normal; font-weight: 700; font-display: swap; }
+      :root {
+        --canvas: #f8fafc;
+        --surface: #ffffff;
+        --text: #182230;
+        --text-secondary: #475467;
+        --text-muted: #667085;
+        --border: #d0d5dd;
+        --border-soft: #e4e7ec;
+        --subtle: #f2f4f7;
+        --primary: #175cd3;
+        --primary-hover: #1849a9;
+        --primary-soft: #eff8ff;
+        --focus-ring: #d1e9ff;
+        color: var(--text);
+        background: transparent;
+        font: 11px "Comic Sans MS", "Comic Neue", cursive;
+      }
+      * { box-sizing: border-box; }
+      html, body { height: 100%; overflow: hidden; }
+      body { margin: 0; padding: 0; }
+      .surface { display: flex; position: relative; flex-direction: column; width: 100%; height: 100%; margin: 0; padding: 12px; overflow: hidden; border: 1px solid var(--border); border-radius: 16px; background: var(--canvas); box-shadow: inset 0 1px 0 rgb(255 255 255 / 80%); }
+      .header { display: flex; position: relative; flex: 0 0 auto; align-items: center; gap: 9px; margin-bottom: 10px; }
+      .brand-icon { width: 40px; height: 40px; padding: 7px; border: 1px solid var(--border-soft); border-radius: 9px; background: var(--surface); }
+      .heading { flex: 1; min-width: 0; }
+      h1 { margin: 0; font-size: 17px; font-weight: 700; line-height: 1.1; letter-spacing: 0; }
+      .tab-nav { display: grid; flex: 0 0 auto; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; margin: -2px 0 10px; }
+      .tab-button { display: flex; align-items: center; justify-content: center; height: 34px; min-width: 0; padding: 6px; overflow: hidden; border: 1px solid var(--border); border-radius: 9px; color: var(--text-muted); background: var(--surface); cursor: pointer; }
+      .tab-button:hover { border-color: #98a2b3; color: var(--text-secondary); background: var(--subtle); }
+      .tab-button svg { display: block; width: 18px; height: 18px; }
+      .tab-button[aria-selected="true"] { border-color: var(--primary); color: var(--primary); background: var(--primary-soft); }
+      .header-action { width: 34px; height: 34px; padding: 0; border: 0; border-radius: 8px; color: var(--text-secondary); background: transparent; font-size: 20px; line-height: 1; cursor: pointer; }
+      .header-action:hover { color: var(--primary); background: var(--subtle); }
+      .header-action img { display: block; width: 18px; height: 18px; margin: auto; }
+      .action-state-loading { animation: spin 700ms linear infinite; }
+      [hidden] { display: none !important; }
+      .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+      .view { min-height: 0; }
+      .view:not([hidden]) { flex: 1 1 auto; overflow-x: hidden; overflow-y: auto; padding-right: 2px; }
+      label { display: block; margin: 0 0 3px; color: var(--text-secondary); font-size: 11px; font-weight: 600; }
+      input, select, textarea, button { font: inherit; }
+      input, select { width: 100%; height: 36px; min-width: 0; padding: 7px 9px; overflow: hidden; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text); text-overflow: ellipsis; white-space: nowrap; }
+      input:focus, select:focus, textarea:focus { outline: 3px solid var(--focus-ring); border-color: var(--primary); }
+      .field { min-width: 0; margin-bottom: 10px; }
+      .application-fields { margin: 0 0 8px; padding: 0; border: 1px solid var(--border); border-radius: 8px; background: var(--subtle); }
+      .application-fields summary { padding: 8px 9px; color: var(--text-secondary); cursor: pointer; font-size: 11px; font-weight: 600; }
+      .application-fields[open] { padding-bottom: 10px; }
+      .application-fields[open] summary { margin-bottom: 10px; border-bottom: 1px solid var(--border); }
+      .application-fields .grid, .application-fields .options, .application-fields .description-editor { margin-right: 11px; margin-left: 11px; }
+      .description-editor { margin: 0 0 12px; }
+      .description-editor summary { color: var(--text-secondary); cursor: pointer; font-size: 11px; font-weight: 600; }
+      .description-editor textarea { display: block; width: 100%; min-height: 92px; margin-top: 7px; padding: 9px 11px; resize: vertical; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text); line-height: 1.35; }
+      .resume-picker { position: relative; width: 100%; min-width: 0; }
+      .resume-picker-button { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; height: 36px; min-width: 0; padding: 7px 9px; overflow: hidden; border: 1px solid var(--border); border-radius: 8px; color: var(--text); background: var(--surface); cursor: pointer; text-align: left; }
+      .resume-picker-button:focus { outline: 3px solid var(--focus-ring); border-color: var(--primary); }
+      .resume-picker-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .resume-picker-arrow { flex: 0 0 auto; font-size: 11px; }
+      .resume-menu { position: absolute; z-index: 20; top: calc(100% + 5px); right: 0; left: 0; max-width: 100%; max-height: min(210px, calc(100vh - 160px)); padding: 4px; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); box-shadow: 0 10px 28px rgb(16 24 40 / 16%); }
+      .resume-option { display: block; width: 100%; min-width: 0; padding: 9px 8px; overflow: hidden; border: 0; border-radius: 5px; color: var(--text-secondary); background: transparent; cursor: pointer; text-align: left; text-overflow: ellipsis; white-space: nowrap; }
+      .resume-option:hover, .resume-option:focus, .resume-option[aria-selected="true"] { outline: 0; color: var(--primary); background: var(--primary-soft); }
+      .grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
+      .options { display: grid; grid-template-columns: 76px minmax(92px, 1fr) 82px; align-items: end; gap: 6px; margin-bottom: 10px; }
+      .options .field { margin: 0; }
+      .checkbox-row { display: flex; align-items: center; gap: 6px; height: 36px; min-width: 0; margin: 0; padding: 7px; border: 1px solid var(--border); border-radius: 8px; color: var(--text-secondary); background: var(--surface); }
+      .checkbox-row input { flex: 0 0 auto; width: 14px; height: 14px; min-height: 14px; padding: 0; accent-color: var(--primary); }
+      .checkbox-row label { min-width: 0; margin: 0; overflow: hidden; font-size: 10px; line-height: 1.1; text-overflow: ellipsis; white-space: nowrap; }
+      .utilities-grid { display: grid; gap: 8px; }
+      .utilities-grid button { height: 36px; min-width: 0; padding: 7px 9px; overflow: hidden; border: 1px solid var(--border); border-radius: 8px; color: var(--text-secondary); background: var(--surface); cursor: pointer; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+      .utilities-grid button:hover { border-color: #98a2b3; background: var(--subtle); }
+      .utilities-grid button:disabled { cursor: default; opacity: 0.55; }
+      .utility-copy-row { display: grid; grid-template-columns: minmax(0, 1fr) 36px; height: 36px; overflow: hidden; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); }
+      .utility-copy-row.password-row { grid-template-columns: minmax(0, 1fr) 36px 36px; }
+      .utility-copy-row > span, .utility-copy-row > input { align-self: center; min-width: 0; padding: 0 10px; overflow: hidden; border: 0; color: var(--text-secondary); background: transparent; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+      .utility-copy-row > input { height: 34px; outline: 0; font-family: ui-monospace, "SFMono-Regular", Consolas, monospace; font-weight: 400; }
+      .utilities-grid .utility-icon-button { display: flex; align-items: center; justify-content: center; width: 36px; height: 34px; padding: 0; border: 0; border-left: 1px solid var(--border); border-radius: 0; }
+      .utilities-grid .utility-icon-button:hover { border-color: var(--border); background: var(--subtle); }
+      .utility-icon-button img { display: block; width: 16px; height: 16px; }
+      .actions { display: grid; position: relative; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 2px; }
+      .application-status-row { display: grid; grid-column: 1 / -1; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 6px; }
+      .duplicate-status { min-height: 30px; padding: 7px 6px; overflow: hidden; border: 1px solid var(--border); border-radius: 8px; color: var(--text-secondary); background: var(--surface); font-weight: 700; text-align: center; text-overflow: ellipsis; white-space: nowrap; }
+      .duplicate-status.checking { border-color: var(--border); color: var(--text-secondary); background: var(--surface); }
+      .duplicate-status.clear { border-color: #b9edc9; color: #188038; background: #f0fff4; }
+      .duplicate-status.exists { border-color: #f2c078; color: #a64b00; background: #fff8ed; }
+      .duplicate-status.rejected { border-color: #f4c5c5; color: #b3261e; background: #fff6f6; }
+      .duplicate-status.error { border-color: #f4c5c5; color: #b3261e; background: #fff6f6; }
+      .duplicate-status.incomplete { border-color: #d6deea; color: #67758a; background: #f6f7f9; }
+      .citizenship-status { min-height: 30px; padding: 7px 6px; overflow: hidden; border: 1px solid var(--border); border-radius: 8px; color: var(--text-secondary); background: var(--surface); font-weight: 700; text-align: center; text-overflow: ellipsis; white-space: nowrap; }
+      .citizenship-status.clear { border-color: #b9edc9; color: #188038; background: #f0fff4; }
+      .citizenship-status.warning { border-color: #f2c078; color: #a64b00; background: #fff8ed; }
+      .citizenship-status.restricted { border-color: #f4c5c5; color: #b3261e; background: #fff6f6; }
+      .actions button { height: 36px; min-width: 0; padding: 7px 9px; overflow: hidden; border: 1px solid var(--border); border-radius: 8px; color: var(--text-secondary); background: var(--surface); cursor: pointer; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+      .actions .log-action { display: flex; align-items: center; justify-content: center; gap: 6px; }
+      .log-state-icon { flex: 0 0 auto; width: 13px; height: 13px; filter: brightness(0) invert(1); }
+      .actions button:not(.score-status):hover { border-color: #98a2b3; background: var(--subtle); }
+      .actions button:disabled { cursor: default; opacity: 0.55; }
+      .score-control { display: grid; position: relative; grid-column: 1 / -1; grid-template-columns: minmax(0, 1fr) 34px; gap: 4px; min-width: 0; }
+      .score-status { display: flex; align-items: center; justify-content: center; gap: 4px; width: 100%; height: 36px; min-width: 0; padding: 5px 6px; border: 1px solid var(--border); border-radius: 8px; appearance: none; color: var(--text-secondary); background: var(--surface); font-weight: 700; text-align: center; white-space: normal; }
+      .score-status:focus { outline: none; }
+      .score-status:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+      .score-status .activity-spinner { width: 14px; height: 14px; }
+      #score-value { min-width: 0; font-size: 10px; line-height: 1.15; white-space: pre-line; }
+      .actions .score-refresh { width: 34px; padding: 0; color: var(--text-secondary); background: var(--surface); font-size: 18px; line-height: 1; }
+      .score-refresh img { display: block; width: 18px; height: 18px; margin: auto; }
+      .score-status.score-high, .score-axis.score-high { border-color: #b9edc9; color: #188038; background: #f0fff4; }
+      .score-status.score-moderate, .score-axis.score-moderate { border-color: #f2c078; color: #a64b00; background: #fff8ed; }
+      .score-status.score-low, .score-axis.score-low { border-color: #f4c5c5; color: #b3261e; background: #fff6f6; }
+      .score-popover { position: absolute; z-index: 10; right: 0; bottom: calc(100% + 8px); width: 220px; padding: 11px; border: 1px solid var(--border); border-radius: 8px; color: var(--text); background: var(--surface); box-shadow: 0 10px 28px rgb(16 24 40 / 16%); }
+      .score-popover strong { display: block; margin-bottom: 8px; font-size: 12px; }
+      .score-axes { display: grid; gap: 5px; margin: 0; }
+      .score-axis { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 28px; margin: 0; padding: 5px 7px; border: 1px solid var(--border-soft); border-radius: 6px; }
+      .score-axis dt, .score-axis dd { margin: 0; }
+      .score-axis dt { color: var(--text-secondary); }
+      .score-axis dd { font-weight: 700; font-variant-numeric: tabular-nums; }
+      #log-without-score { border-color: #344054; color: #fff; background: #344054; }
+      #log-without-score:hover { border-color: #1d2939; background: #1d2939; }
+      #log-with-score { border-color: var(--primary); color: #fff; background: var(--primary); }
+      #log-with-score:hover { border-color: var(--primary-hover); background: var(--primary-hover); }
+      #message, #settings-message { min-height: 38px; margin-top: 8px; padding: 9px; border: 1px solid var(--border); border-radius: 8px; color: var(--text-secondary); background: var(--surface); font-size: 10px; line-height: 1.35; overflow-wrap: anywhere; }
+      #message { display: flex; position: absolute; z-index: 30; top: 50%; right: 38px; align-items: center; width: max-content; max-width: 220px; min-height: 0; margin: 0; padding: 5px 8px; transform: translateY(-50%); border-radius: 6px; box-shadow: 0 6px 16px rgb(16 24 40 / 16%); }
+      #message.loading::before { flex: 0 0 auto; width: 9px; height: 9px; margin-right: 6px; border: 2px solid var(--border); border-right-color: var(--primary); border-radius: 50%; content: ""; animation: spin 700ms linear infinite; }
+      #message-text { min-width: 0; }
+      .activity-spinner { flex: 0 0 auto; width: 16px; height: 16px; border: 2px solid var(--border); border-right-color: var(--primary); border-radius: 50%; animation: spin 700ms linear infinite; }
+      @keyframes spin { to { transform: rotate(360deg); } }
+      #settings-message:empty { display: none; }
+      #log-view, #settings-view, #dashboard-view, #search-view, #utilities-view { min-height: 0; }
+      #settings-view .field { margin-bottom: 12px; }
+      #save-settings { width: 100%; height: 36px; border: 1px solid var(--primary); border-radius: 8px; color: #fff; background: var(--primary); cursor: pointer; font-weight: 600; }
+      #save-settings:hover { background: var(--primary-hover); }
+      .month-picker { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+      .month-picker label { margin: 0; }
+      .month-picker input { width: 156px; height: 30px; padding: 5px 7px; }
+      .dashboard-total { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 5px; padding: 0 4px 4px; border-bottom: 1px solid var(--border); }
+      .dashboard-total span { color: var(--text-secondary); font-size: 11px; font-weight: 700; }
+      .dashboard-total strong { color: var(--primary); font-size: 23px; line-height: 1; font-variant-numeric: tabular-nums; }
+      .dashboard-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+      .metric { min-width: 0; padding: 6px 4px; border: 1px solid var(--border); border-radius: 8px; text-align: center; background: var(--surface); }
+      .metric strong { display: block; color: var(--primary); font-size: 20px; line-height: 1; font-variant-numeric: tabular-nums; }
+      .metric span { display: block; margin-top: 4px; color: var(--text-muted); font-size: 8px; font-weight: 700; white-space: nowrap; }
+      .status-breakdown-heading { display: flex; align-items: center; justify-content: space-between; margin-top: 5px; color: var(--text-secondary); font-size: 10px; font-weight: 700; }
+      #refresh-dashboard { display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; padding: 0; border: 1px solid var(--border); border-radius: 7px; color: var(--text-secondary); background: var(--surface); cursor: pointer; }
+      #refresh-dashboard:hover { border-color: #98a2b3; background: var(--subtle); }
+      #refresh-dashboard img { width: 14px; height: 14px; }
+      .status-breakdown { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; margin-top: 4px; }
+      .status-metric { display: flex; align-items: center; justify-content: space-between; min-width: 0; height: 25px; padding: 4px 7px; border: 1px solid var(--border); border-radius: 7px; background: var(--surface); }
+      .status-metric span { min-width: 0; overflow: hidden; font-size: 8px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+      .status-metric strong { flex: 0 0 auto; margin-left: 5px; font-size: 13px; font-variant-numeric: tabular-nums; }
+      .status-applied { border-color: #b2ddff; color: var(--primary); background: var(--primary-soft); }
+      .status-progress { border-color: #f2c078; color: #a64b00; background: #fff8ed; }
+      .status-rejected-metric { border-color: #f4c5c5; color: #b3261e; background: #fff6f6; }
+      .status-cancelled-metric { border-color: #d6deea; color: #67758a; background: #f6f7f9; }
+      #dashboard-message { margin-top: 6px; color: var(--text-muted); font-size: 9px; line-height: 1.3; text-align: center; }
+      #dashboard-message:empty { display: none; }
+      #dashboard-message.dashboard-error { color: #b3261e; }
+      .application-search-controls { display: grid; grid-template-columns: minmax(0, 1fr) 112px; gap: 6px; margin-bottom: 8px; }
+      .application-search { position: relative; min-width: 0; }
+      .application-search input { padding-left: 30px; }
+      .application-status-filter { min-width: 0; height: 36px; padding: 7px 8px; color: var(--text-secondary); font-size: 10px; font-weight: 700; }
+      .application-search input::-webkit-search-cancel-button { cursor: pointer; }
+      .application-search-icon { position: absolute; top: 10px; left: 9px; width: 15px; height: 15px; pointer-events: none; }
+      .search-results { position: absolute; z-index: 20; top: calc(100% + 5px); right: 0; left: 0; max-height: 236px; padding: 4px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); box-shadow: 0 10px 28px rgb(16 24 40 / 16%); }
+      .search-result { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 3px 9px; width: 100%; min-width: 0; padding: 9px; border: 0; border-radius: 5px; color: var(--text-secondary); background: transparent; cursor: pointer; text-align: left; }
+      .search-result:hover, .search-result:focus { outline: 0; background: var(--subtle); }
+      .search-result strong, .search-result span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .search-result strong { font-size: 12px; }
+      .search-result-company { grid-column: 1; color: var(--text-muted); font-size: 10px; }
+      .search-result-status { grid-column: 2; grid-row: 1 / 3; align-self: center; }
+      .search-message { min-height: 18px; color: var(--text-muted); font-size: 11px; line-height: 1.35; text-align: center; }
+      .search-message:empty { display: none; }
+      .search-message.search-error { color: #b3261e; }
+      .insights { min-width: 0; }
+      .insights-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+      .insights-title { min-width: 0; }
+      .insights-title strong, .insights-title span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .insights-title strong { font-size: 12px; }
+      .insights-title span { margin-top: 1px; color: var(--text-muted); font-size: 9px; }
+      .status-badge { flex: 0 0 auto; padding: 5px 7px; border: 1px solid #b2ddff; border-radius: 6px; color: var(--primary); background: var(--primary-soft); font-size: 10px; font-weight: 700; }
+      .status-in-progress { border-color: #f2c078; color: #a64b00; background: #fff8ed; }
+      .status-rejected { border-color: #f4c5c5; color: #b3261e; background: #fff6f6; }
+      .status-cancelled { border-color: #d6deea; color: #67758a; background: #f6f7f9; }
+      .insights-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 10px; padding: 6px 0; border-bottom: 1px solid var(--border); }
+      .insight-item { min-width: 0; }
+      .insight-item span { display: block; color: #6b7890; font-size: 9px; font-weight: 700; text-transform: uppercase; }
+      .insight-item strong { display: block; margin-top: 1px; overflow: hidden; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+      .insight-resume { grid-column: 1 / -1; }
+      .insight-resume strong { font-size: 9px; }
+      .insight-flags b { color: var(--text-secondary); }
+      .insight-status { position: relative; }
+      .insight-status-editor { display: flex; align-items: center; gap: 4px; margin-top: 2px; }
+      .insight-status-editor select { flex: 1; height: 25px; min-width: 0; padding: 2px 5px; font-size: 9px; }
+      .insight-status-editor button { flex: 0 0 auto; height: 25px; padding: 2px 7px; border: 1px solid var(--primary); border-radius: 6px; color: #fff; background: var(--primary); cursor: pointer; font-size: 9px; font-weight: 700; }
+      .insight-status-editor button:disabled { cursor: default; opacity: 0.55; }
+      .insight-status-editor .delete-application { width: 25px; padding: 5px; border-color: #f4c5c5; background: #fff6f6; }
+      .delete-application img { display: block; width: 13px; height: 13px; }
+      .delete-confirmation { position: absolute; z-index: 14; top: calc(100% + 5px); right: 0; width: 190px; padding: 8px; border: 1px solid #f4c5c5; border-radius: 8px; color: var(--text-secondary); background: var(--surface); box-shadow: 0 8px 20px rgb(16 24 40 / 16%); }
+      .delete-confirmation > span { display: block; margin-bottom: 7px; color: var(--text-secondary); font-size: 10px; text-transform: none; }
+      .delete-confirmation-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+      .delete-confirmation-actions button { height: 25px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); cursor: pointer; font-size: 9px; font-weight: 700; }
+      .delete-confirmation-actions .confirm-delete { border-color: #b3261e; color: #fff; background: #b3261e; }
+      .status-message { grid-column: 1 / -1; min-height: 0; font-size: 10px; }
+      .status-message:empty { display: none; }
+      .insight-details-editor { grid-column: 1 / -1; margin-top: 2px; border-top: 1px solid var(--border-soft); padding-top: 5px; }
+      .insight-details-editor summary { color: var(--text-secondary); cursor: pointer; font-size: 10px; font-weight: 700; }
+      .insight-edit-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; margin-top: 7px; }
+      .insight-edit-grid .field { margin: 0; }
+      .insight-edit-grid .wide-field { grid-column: 1 / -1; }
+      .insight-edit-grid input, .insight-edit-grid textarea { width: 100%; border: 1px solid var(--border); border-radius: 7px; background: var(--surface); color: var(--text); }
+      .insight-edit-grid input { height: 28px; padding: 4px 7px; font-size: 10px; }
+      .insight-edit-grid textarea { grid-column: 1 / -1; min-height: 68px; padding: 7px; resize: vertical; font-size: 10px; line-height: 1.3; }
+      .insight-edit-grid .checkbox-row { height: 28px; padding: 5px 7px; }
+      .insight-edit-grid .checkbox-row input { flex: 0 0 auto; width: 14px; height: 14px; padding: 0; }
+      .insight-edit-grid .checkbox-row label { display: block; margin: 0; font-size: 10px; }
+      .save-details { grid-column: 1 / -1; height: 28px; border: 1px solid var(--primary); border-radius: 7px; color: #fff; background: var(--primary); cursor: pointer; font-size: 10px; font-weight: 700; }
+      .save-details:disabled { cursor: default; opacity: 0.55; }
+      .insight-score { display: flex; position: relative; align-items: center; justify-content: space-between; gap: 8px; margin: 6px 0 0; }
+      .insight-score-heading span { display: block; color: var(--text-secondary); font-weight: 700; }
+      .insight-score-heading small { display: block; margin-top: 1px; color: #6b7890; font-size: 8px; }
+      .insight-score-value { padding: 5px 7px; border: 1px solid var(--border); border-radius: 6px; color: var(--text-secondary); background: var(--surface); cursor: pointer; font-weight: 700; font-variant-numeric: tabular-nums; }
+      .insight-score-value:disabled { cursor: default; }
+      .insight-score-value.score-high { border-color: #b9edc9; color: #188038; background: #f0fff4; }
+      .insight-score-value.score-moderate { border-color: #f2c078; color: #a64b00; background: #fff8ed; }
+      .insight-score-value.score-low { border-color: #f4c5c5; color: #b3261e; background: #fff6f6; }
+      .insight-axes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; }
+      .insight-axes .score-axis { min-width: 0; min-height: 22px; padding: 3px 5px; }
+      .matched-terms { margin: 6px 0 0; color: var(--text-muted); font-size: 9px; line-height: 1.25; overflow-wrap: anywhere; }
+      .matched-terms strong { color: var(--text-secondary); }
+      .insight-breakdown-popover { position: absolute; z-index: 13; right: 0; bottom: calc(100% + 6px); width: 100%; max-height: 190px; padding: 8px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); box-shadow: 0 8px 20px rgb(16 24 40 / 16%); }
+      .job-link { display: flex; flex: 0 0 auto; align-items: center; justify-content: center; width: 26px; height: 26px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); }
+      .job-link img { width: 14px; height: 14px; }
+      .job-link:hover { border-color: #98a2b3; background: var(--subtle); }
+      .success { border-color: #b9edc9 !important; color: #188038 !important; background: #f0fff4 !important; }
+      .warning { border-color: #f2c078 !important; color: #a64b00 !important; background: #fff8ed !important; }
+      .error { border-color: #f4c5c5 !important; color: #b3261e !important; background: #fff6f6 !important; }
+      @media (prefers-reduced-motion: reduce) { .activity-spinner { animation: none; } }
+      @media (max-width: 360px) { .surface { padding: 12px; } .tab-button { padding-right: 4px; padding-left: 4px; } .options { grid-template-columns: 1fr 1fr; } .options .field { grid-column: 1 / -1; } }
+    </style>
+  </head>
+  <body>
+    <main class="surface">
+      <header class="header">
+        <img class="brand-icon" src="icons/resume-128.png" alt="">
+        <div class="heading">
+          <h1>Job Tracker</h1>
+        </div>
+        <button class="header-action" id="refresh-context" title="Capture current page" aria-label="Capture current page">
+          <img id="refresh-context-icon" src="icons/refresh-cw.svg" alt="">
+        </button>
+        <div id="message" role="status" aria-live="polite" hidden>
+          <span id="message-text"></span>
+        </div>
+      </header>
+      <nav class="tab-nav" aria-label="Job tracker tabs">
+        <button class="tab-button" id="applications-tab" type="button" role="tab" aria-controls="log-view" aria-selected="true" title="Applications" aria-label="Applications">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/>
+            <path d="M3 10a2 2 0 0 1 .7-1.5l7-6a2 2 0 0 1 2.6 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          </svg>
+        </button>
+        <button class="tab-button" id="utilities-tab" type="button" role="tab" aria-controls="utilities-view" aria-selected="false" title="Utilities" aria-label="Utilities">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="7.5" cy="15.5" r="5.5"/>
+            <path d="m11.5 11.5 8-8"/>
+            <path d="m16 7 2 2"/>
+            <path d="m18 5 2 2"/>
+          </svg>
+        </button>
+        <button class="tab-button" id="search" type="button" role="tab" aria-controls="search-view" aria-selected="false" title="Search" aria-label="Search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="m21 21-4.3-4.3"/>
+          </svg>
+        </button>
+        <button class="tab-button" id="dashboard" type="button" role="tab" aria-controls="dashboard-view" aria-selected="false" title="Dashboard" aria-label="Dashboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect width="7" height="9" x="3" y="3" rx="1"/>
+            <rect width="7" height="5" x="14" y="3" rx="1"/>
+            <rect width="7" height="9" x="14" y="12" rx="1"/>
+            <rect width="7" height="5" x="3" y="16" rx="1"/>
+          </svg>
+        </button>
+        <button class="tab-button" id="settings" type="button" role="tab" aria-controls="settings-view" aria-selected="false" title="Settings" aria-label="Settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12.2 2h-.4a2 2 0 0 0-2 2v.2a2 2 0 0 1-1 1.7l-.4.3a2 2 0 0 1-2 0l-.2-.1a2 2 0 0 0-2.7.7l-.2.4a2 2 0 0 0 .7 2.7l.2.1a2 2 0 0 1 1 1.7v.5a2 2 0 0 1-1 1.7l-.2.1a2 2 0 0 0-.7 2.7l.2.4a2 2 0 0 0 2.7.7l.2-.1a2 2 0 0 1 2 0l.4.3a2 2 0 0 1 1 1.7v.2a2 2 0 0 0 2 2h.4a2 2 0 0 0 2-2v-.2a2 2 0 0 1 1-1.7l.4-.3a2 2 0 0 1 2 0l.2.1a2 2 0 0 0 2.7-.7l.2-.4a2 2 0 0 0-.7-2.7l-.2-.1a2 2 0 0 1-1-1.7v-.5a2 2 0 0 1 1-1.7l.2-.1a2 2 0 0 0 .7-2.7l-.2-.4a2 2 0 0 0-2.7-.7l-.2.1a2 2 0 0 1-2 0l-.4-.3a2 2 0 0 1-1-1.7V4a2 2 0 0 0-2-2z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+        </button>
+      </nav>
+      <section class="view" id="log-view">
+        <div class="field">
+          <label for="resume-picker-button">Resume version</label>
+          <div class="resume-picker" id="resume-picker">
+            <select id="resume" tabindex="-1" aria-hidden="true" hidden></select>
+            <button class="resume-picker-button" id="resume-picker-button" type="button" aria-controls="resume-menu" aria-expanded="false" aria-haspopup="listbox">
+              <span class="resume-picker-label" id="resume-picker-label">Loading resumes...</span>
+              <span class="resume-picker-arrow" aria-hidden="true">&#9662;</span>
+            </button>
+            <div class="resume-menu" id="resume-menu" role="listbox" aria-label="Resume versions" hidden></div>
+          </div>
+        </div>
+        <details class="application-fields" id="application-fields">
+          <summary>Application fields</summary>
+          <div class="grid">
+            <div class="field">
+              <label for="company">Company</label>
+              <input id="company" autocomplete="off" placeholder="Enter company name">
+            </div>
+            <div class="field">
+              <label for="title">Job title</label>
+              <input id="title" autocomplete="off">
+            </div>
+          </div>
+          <div class="grid">
+            <div class="field">
+              <label for="source">Job source</label>
+              <input id="source" autocomplete="off">
+            </div>
+            <div class="field">
+              <label for="date">Application date</label>
+              <input id="date" type="date">
+            </div>
+          </div>
+          <div class="options">
+            <div class="field">
+              <label for="status">Status</label>
+              <select id="status">
+                <option value="Applied">Applied</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Rejected">Rejected</option>
+                <option value="Cancelled">Cancelled</option>
+              </select>
+            </div>
+            <div class="checkbox-row">
+              <input id="sponsorship" type="checkbox">
+              <label for="sponsorship" title="Requested sponsorship" aria-label="Requested sponsorship">Sponsorship</label>
+            </div>
+            <div class="checkbox-row">
+              <input id="referral" type="checkbox">
+              <label for="referral">Referral</label>
+            </div>
+          </div>
+          <details class="description-editor" id="description-editor">
+            <summary>Job description</summary>
+            <textarea id="description" rows="5" spellcheck="true"></textarea>
+          </details>
+        </details>
+        <div class="actions">
+          <div class="application-status-row">
+            <div class="duplicate-status incomplete" id="duplicate-status" role="status">Need company + role</div>
+            <div class="citizenship-status warning" id="citizenship-status" role="status">No information</div>
+          </div>
+          <div class="score-control" id="score-control">
+            <button class="score-status" id="score-status" type="button" aria-controls="score-popover" aria-expanded="false" aria-live="polite" title="Show score breakdown">
+              <span id="score-value">View score</span>
+              <span class="activity-spinner" id="score-spinner" aria-hidden="true"></span>
+            </button>
+            <button class="score-refresh" id="refresh-score" type="button" title="Recompute score" aria-label="Recompute score">
+              <img src="icons/refresh-cw.svg" alt="">
+            </button>
+            <div class="score-popover" id="score-popover" role="dialog" aria-label="Score breakdown" hidden>
+              <strong>Model decision</strong>
+              <dl class="score-axes" id="score-axes"></dl>
+            </div>
+          </div>
+          <button class="log-action" id="log-without-score"><span>Log without score</span><img class="log-state-icon" src="icons/refresh-cw.svg" alt="" hidden></button>
+          <button class="log-action" id="log-with-score"><span>Log with score</span><img class="log-state-icon" src="icons/refresh-cw.svg" alt="" hidden></button>
+        </div>
+      </section>
+      <section class="view" id="settings-view" hidden>
+        <form id="settings-form">
+          <div class="field">
+            <label for="linkedin-url">LinkedIn URL</label>
+            <input id="linkedin-url" type="url" inputmode="url" autocomplete="url" placeholder="https://www.linkedin.com/in/your-profile">
+          </div>
+          <div class="field">
+            <label for="website-url">Website URL</label>
+            <input id="website-url" type="url" inputmode="url" autocomplete="url" placeholder="https://your-website.com">
+          </div>
+          <div class="field">
+            <label for="github-url">GitHub URL</label>
+            <input id="github-url" type="url" inputmode="url" autocomplete="url" placeholder="https://github.com/your-profile">
+          </div>
+          <button id="save-settings" type="submit">Save settings</button>
+        </form>
+        <div id="settings-message" role="status"></div>
+      </section>
+      <section class="view" id="utilities-view" hidden>
+        <div class="utilities-grid" aria-label="Application utilities">
+          <div class="utility-copy-row password-row">
+            <input id="generated-password" type="text" readonly aria-label="Generated password" placeholder="Generated password">
+            <button class="utility-icon-button" id="generate-password" type="button" title="Generate password" aria-label="Generate password">
+              <img src="icons/refresh-cw.svg" alt="">
+            </button>
+            <button class="utility-icon-button copy-button" id="copy-password" type="button" disabled title="Copy password" aria-label="Copy password">
+              <img class="copy-icon" src="icons/copy.svg" alt="">
+              <img class="check-icon" src="icons/check.svg" alt="" hidden>
+            </button>
+          </div>
+          <div class="utility-copy-row">
+            <span>LinkedIn</span>
+            <button class="utility-icon-button copy-button" id="copy-linkedin" type="button" disabled title="Copy LinkedIn" aria-label="Copy LinkedIn">
+              <img class="copy-icon" src="icons/copy.svg" alt="">
+              <img class="check-icon" src="icons/check.svg" alt="" hidden>
+            </button>
+          </div>
+          <div class="utility-copy-row">
+            <span>Website</span>
+            <button class="utility-icon-button copy-button" id="copy-website" type="button" disabled title="Copy website" aria-label="Copy website">
+              <img class="copy-icon" src="icons/copy.svg" alt="">
+              <img class="check-icon" src="icons/check.svg" alt="" hidden>
+            </button>
+          </div>
+          <div class="utility-copy-row">
+            <span>GitHub</span>
+            <button class="utility-icon-button copy-button" id="copy-github" type="button" disabled title="Copy GitHub" aria-label="Copy GitHub">
+              <img class="copy-icon" src="icons/copy.svg" alt="">
+              <img class="check-icon" src="icons/check.svg" alt="" hidden>
+            </button>
+          </div>
+        </div>
+      </section>
+      <section class="view" id="dashboard-view" hidden>
+        <div class="dashboard-total">
+          <span>Applications so far</span>
+          <strong id="total-count">-</strong>
+        </div>
+        <div class="month-picker">
+          <label for="dashboard-month">Monthly view</label>
+          <input id="dashboard-month" type="month">
+        </div>
+        <div class="dashboard-grid">
+          <div class="metric">
+            <strong id="day-count">-</strong>
+            <span>Current day</span>
+          </div>
+          <div class="metric">
+            <strong id="week-count">-</strong>
+            <span>Current week</span>
+          </div>
+          <div class="metric">
+            <strong id="month-count">-</strong>
+            <span id="month-label">Current month</span>
+          </div>
+        </div>
+        <div class="status-breakdown-heading">
+          <span>Status breakdown</span>
+          <button id="refresh-dashboard" type="button" title="Refresh dashboard" aria-label="Refresh dashboard"><img src="icons/refresh-cw.svg" alt=""></button>
+        </div>
+        <div class="status-breakdown" aria-label="Selected month status breakdown">
+          <div class="status-metric status-applied"><span>Applied</span><strong id="status-applied-count">-</strong></div>
+          <div class="status-metric status-progress"><span>In Progress</span><strong id="status-progress-count">-</strong></div>
+          <div class="status-metric status-rejected-metric"><span>Rejected</span><strong id="status-rejected-count">-</strong></div>
+          <div class="status-metric status-cancelled-metric"><span>Cancelled</span><strong id="status-cancelled-count">-</strong></div>
+        </div>
+        <div id="dashboard-message" role="status"></div>
+      </section>
+      <section class="view" id="search-view" hidden>
+        <div class="application-search-controls">
+          <div class="application-search">
+            <label class="visually-hidden" for="application-search">Search by company or role</label>
+            <img class="application-search-icon" src="icons/search.svg" alt="">
+            <input id="application-search" type="search" autocomplete="off" role="combobox" aria-autocomplete="list" aria-controls="application-results" aria-expanded="false" placeholder="Start typing...">
+            <div class="search-results" id="application-results" role="listbox" hidden></div>
+          </div>
+          <label class="visually-hidden" for="application-status-filter">Filter by status</label>
+          <select class="application-status-filter" id="application-status-filter">
+            <option value="">All statuses</option>
+            <option value="Applied">Applied</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Rejected">Rejected</option>
+            <option value="Cancelled">Cancelled</option>
+          </select>
+        </div>
+        <div class="search-message" id="search-message" role="status">Loading applications...</div>
+        <article class="insights" id="application-insights" hidden>
+          <div class="insights-header">
+            <div class="insights-title">
+              <strong id="insight-title"></strong>
+              <span id="insight-company"></span>
+            </div>
+            <a class="job-link" id="insight-link" target="_blank" rel="noreferrer" title="Open posting" aria-label="Open posting">
+              <img src="icons/external-link.svg" alt="">
+            </a>
+          </div>
+          <div class="insights-grid">
+            <div class="insight-item"><span>Applied</span><strong id="insight-date"></strong></div>
+            <div class="insight-item"><span>Source</span><strong id="insight-source"></strong></div>
+            <div class="insight-item insight-resume"><span>Resume</span><strong id="insight-resume"></strong></div>
+            <div class="insight-item insight-flags"><span>Options</span><strong>Sponsor <b id="insight-sponsorship"></b> &middot; Referral <b id="insight-referral"></b></strong></div>
+            <div class="insight-item insight-status">
+              <span>Status</span>
+              <div class="insight-status-editor">
+                <select id="insight-status" aria-label="Application status">
+                  <option value="Applied">Applied</option>
+                  <option value="In Progress">In Progress</option>
+                  <option value="Rejected">Rejected</option>
+                  <option value="Cancelled">Cancelled</option>
+                </select>
+                <button id="save-insight-status" type="button">Save</button>
+                <button class="delete-application" id="delete-application" type="button" title="Delete application" aria-label="Delete application">
+                  <img src="icons/trash.svg" alt="">
+                </button>
+              </div>
+              <div class="delete-confirmation" id="delete-confirmation" role="dialog" aria-label="Confirm application deletion" hidden>
+                <span>Delete this application and its score?</span>
+                <div class="delete-confirmation-actions">
+                  <button id="cancel-delete" type="button">Cancel</button>
+                  <button class="confirm-delete" id="confirm-delete" type="button">Delete</button>
+                </div>
+              </div>
+            </div>
+            <div class="status-message" id="status-message" role="status"></div>
+            <details class="insight-details-editor" id="insight-details-editor">
+              <summary>Edit details</summary>
+              <div class="insight-edit-grid">
+                <div class="field">
+                  <label for="insight-company-input">Company</label>
+                  <input id="insight-company-input" autocomplete="off">
+                </div>
+                <div class="field">
+                  <label for="insight-title-input">Job title</label>
+                  <input id="insight-title-input" autocomplete="off">
+                </div>
+                <div class="field">
+                  <label for="insight-source-input">Source</label>
+                  <input id="insight-source-input" autocomplete="off">
+                </div>
+                <div class="field">
+                  <label for="insight-date-input">Applied</label>
+                  <input id="insight-date-input" type="date">
+                </div>
+                <div class="field wide-field">
+                  <label for="insight-url-input">Job URL</label>
+                  <input id="insight-url-input" type="url">
+                </div>
+                <div class="checkbox-row">
+                  <input id="insight-sponsorship-input" type="checkbox">
+                  <label for="insight-sponsorship-input">Sponsorship</label>
+                </div>
+                <div class="checkbox-row">
+                  <input id="insight-referral-input" type="checkbox">
+                  <label for="insight-referral-input">Referral</label>
+                </div>
+                <div class="field wide-field">
+                  <label for="insight-description-input">Job description</label>
+                  <textarea id="insight-description-input" spellcheck="true"></textarea>
+                </div>
+                <button class="save-details" id="save-insight-details" type="button">Save details</button>
+              </div>
+            </details>
+          </div>
+          <div class="insight-score">
+            <div class="insight-score-heading">
+              <span>Logged score</span>
+              <small id="insight-updated"></small>
+            </div>
+            <button class="insight-score-value" id="insight-score" type="button" aria-controls="insight-breakdown" aria-expanded="false"></button>
+            <div class="insight-breakdown-popover" id="insight-breakdown" role="dialog" aria-label="Logged score breakdown" hidden>
+              <dl class="insight-axes" id="insight-axes"></dl>
+              <p class="matched-terms" id="insight-terms"></p>
+            </div>
+          </div>
+        </article>
+      </section>
+    </main>
+    <script src="config.js"></script>
+    <script src="settings.js"></script>
+    <script src="score-display.js"></script>
+    <script src="application-search.js"></script>
+    <script src="duplicate-status.js"></script>
+    <script src="citizenship.js"></script>
+    <script src="password.js"></script>
+    <script src="popup.js"></script>
+  </body>
+</html>

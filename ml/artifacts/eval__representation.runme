@@ -1,0 +1,96 @@
+# Linear Representation Analysis
+
+Status: concluded on 2026-09-07.
+
+## Objective
+
+Compare class geometry before and after the trained `768 -> 3` linear classifier on fold 0's untouched outer-test pairs.
+
+## Hypothesis
+
+The signed pair representation
+
+```text
+resume_embedding - jd_embedding
+```
+
+may already organize resume-JD pairs by fit label. A learned linear projection from 768 dimensions to the three class logits may preserve or improve that class organization without intermediate hidden layers.
+
+## Reproduce
+
+```bash { name=train-linear-fold-zero }
+cd "$(git rev-parse --show-toplevel)/ml"
+.venv/bin/python scripts/train_classifier.py \
+  --device cuda \
+  --fold 0 \
+  --max-epochs 50 \
+  --patience 50 \
+  --experiment resume-jd-linear
+```
+
+```bash { name=analyze-representations }
+cd "$(git rev-parse --show-toplevel)/ml"
+.venv/bin/python scripts/evaluate_classifier.py --fold 0
+```
+
+## Run
+
+| Property | Value |
+| --- | --- |
+| Parent MLflow run | `6297deae60fd4001b6925428e47d0370` |
+| Fold MLflow run | `687cbb87d86a47b7ab50e548cbf1b256` |
+| Outer-test rows | 10,644 |
+| Before representation | Standardized resume embedding minus JD embedding |
+| After representation | Three classifier logits |
+| t-SNE perplexity | 30 |
+| t-SNE seed | 42 |
+
+## Representation Metrics
+
+| Metric | Before | After |
+| --- | ---: | ---: |
+| 10-neighbor label purity | 0.7604 | 0.6122 |
+| Silhouette score | -0.0491 | -0.0476 |
+| Intra-class cosine similarity | 0.0142 | 0.0398 |
+| Inter-class cosine similarity | 0.0097 | -0.0364 |
+| Cosine separation | 0.0045 | 0.0762 |
+| t-SNE trustworthiness | 0.9978 | 0.9995 |
+
+## Held-Out Classification
+
+| Class | Precision | Recall | F1 | Support |
+| --- | ---: | ---: | ---: | ---: |
+| No Fit | 0.8422 | 0.5112 | 0.6362 | 7,802 |
+| Potential Fit | 0.2476 | 0.3203 | 0.2793 | 2,079 |
+| Good Fit | 0.1364 | 0.5754 | 0.2205 | 763 |
+
+Overall outer-test accuracy is `0.4785`; macro F1 is `0.3787`.
+
+## Plot
+
+```text
+data/analysis/6297deae60fd4001b6925428e47d0370/fold_0/tsne_before_after.png
+```
+
+Both t-SNE panels show substantial mixing between true classes. The linear projection increases sampled cosine separation but lowers local 10-neighbor label purity. The plot and JSON report are logged under the fold MLflow run's `representation` artifacts.
+
+## Interpretation
+
+- The pre-training t-SNE contains more compact geometric islands than the logit t-SNE.
+- True-label colors remain mixed within those islands, so the visible pre-training structure is not clean three-class separation.
+- Local 10-neighbor label purity falls from `0.7604` to `0.6122` after the linear projection.
+- Both true-label silhouette scores are negative, before and after training.
+- The linear classifier reaches `0.4785` outer-test accuracy and `0.3787` macro F1 on fold 0.
+- The two t-SNE layouts were fitted independently. Their absolute positions, distances, and island shapes are not directly comparable; the numerical neighborhood and classification metrics provide the comparison.
+
+## Decision
+
+Do not use the signed difference alone with a `768 -> 3` linear projection as the final resume-JD scoring model. In this experiment, the projection discards useful local structure without producing clean true-label clusters or adequate held-out classification.
+
+This result does not reject the frozen EmbeddingGemma document embeddings themselves. It rejects the tested pair-comparison function and classifier configuration:
+
+```text
+(resume_embedding - jd_embedding) -> linear classifier
+```
+
+The next pair-comparison technique remains undecided and must be discussed before another implementation or experiment is run.

@@ -1,0 +1,6 @@
+FlagEmbedding==1.4.2
+sentence-transformers==5.1.0
+transformers>=4.57.1,<4.58
+numpy>=2.0
+pyarrow>=21.0
+scikit-learn>=1.7

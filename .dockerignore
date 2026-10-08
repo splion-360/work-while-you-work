@@ -1,0 +1,7 @@
+.git
+.gitignore
+.env
+.env.*
+DECISION_MAP.md
+extension
+*.log
