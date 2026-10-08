@@ -5,7 +5,7 @@ Work while you Work is a browser-based job application tracker with an ML "syste
 I built this to make my job search easier by keeping application tracking and resume matching in one place.
 
 
-# What is different here?
+### What is different here?
 Fair question and the answer is subjective. There are already plenty of job trackers, and tracking an application is a pretty trivial problem to solve. But, I built this for two main reasons:
 
 1. Existing trackers did not capture the fields I cared about or provide the filtering needed to run some complex analytics.
@@ -13,7 +13,7 @@ Fair question and the answer is subjective. There are already plenty of job trac
 
 I wanted to explore a scoring system that could eventually use application outcomes as feedback instead.
 
-## Model architecture and training
+### Model architecture and training
 
 [![BGE-M3-based resume x JD scoring model training](assets/architecture.svg)](assets/architecture.drawio)
 
