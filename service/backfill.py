@@ -8,10 +8,10 @@ from pathlib import Path
 
 from service.config import ScoringSettings
 from service.notion import NotionClient
-from service.scoring_contract import score_input_fingerprint
+from service.scoring_contract import file_hash, score_input_fingerprint
+from service.scoring_inputs import prepare_scoring_input
 from service.scoring_state import ScoringStore
-from service.server import file_hash, prepare_scoring_input, resume_catalog
-
+from service.server import resume_catalog
 
 PROVENANCE = {"original_saved", "manual_supplied", "recaptured_current_page"}
 
